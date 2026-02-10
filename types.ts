@@ -1,10 +1,10 @@
-
 export interface Service {
   id: string;
   title: string;
   description: string;
   icon: string;
   image: string;
+  revealDelay?: number;
 }
 
 export interface Testimonial {
@@ -17,6 +17,6 @@ export interface Testimonial {
 
 // Interface for the AI chat history
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
