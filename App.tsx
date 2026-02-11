@@ -252,7 +252,7 @@ const App: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsAboutExpanded((prev) => !prev)}
-                className="mt-10 md:mt-12 w-full sm:w-auto bg-aes-cyan hover:bg-white hover:text-aes-navy text-white px-8 py-4 rounded font-bold transition-all uppercase text-xs tracking-widest"
+                className="mt-10 md:mt-12 w-full sm:w-auto bg-aes-cyan duration-300 hover:bg-white hover:text-black text-white px-8 hover:px-10 py-4 rounded font-bold transition-all uppercase text-xs tracking-widest"
               >
                 {isAboutExpanded ? "Show Less" : "Learn More About Us"}
               </button>
@@ -473,12 +473,14 @@ const App: React.FC = () => {
                       placeholder="Tell us what you need..."
                     />
                   </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-aes-navy hover:bg-aes-cyan text-white font-bold py-4 md:py-5 rounded transition-all uppercase tracking-widest shadow-lg text-sm md:text-base"
-                  >
-                    Submit Inquiry
-                  </button>
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      className="mt-10 md:mt-12 bg-aes-cyan duration-300 hover:bg-white hover:text-[#00aeef] border hover:border-[#00aeef] text-white px-10 md:px-16 hover:px-14 py-4 rounded font-bold transition-all uppercase text-xs tracking-widest"
+                    >
+                      Submit Inquiry
+                    </button>
+                  </div>
                 </form>
               </div>
               <div
@@ -509,6 +511,14 @@ const App: React.FC = () => {
                     className="text-base md:text-lg font-bold hover:text-aes-cyan transition-colors break-words"
                   >
                     info@aesaus.com.au
+                  </a>
+                  <a
+                    href="mailto:ghsilva2895@gmail.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-base md:text-lg font-bold hover:text-aes-cyan transition-colors break-words mt-2 block"
+                  >
+                    ghsilva2895@gmail.com
                   </a>
                 </div>
                 <div>
