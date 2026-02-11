@@ -474,7 +474,7 @@ const Hero: React.FC = () => {
       {/* Background Image */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center md:block">
-          <div className="relative w-full aspect-[4/9] md:aspect-auto md:h-full">
+          <div className="relative w-full aspect-[4/9] md:aspect-auto md:h-full scale-[1.15] sm:scale-100">
             {mediaItems.length === 0 ? (
               <div
                 className="absolute inset-0"
@@ -553,8 +553,8 @@ const Hero: React.FC = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 text-white w-full flex items-center justify-center md:justify-start">
-        <div className="max-w-4xl text-center md:text-left relative">
+      <div className="container mx-auto px-4 relative z-10 text-white w-full flex items-center justify-center sm:justify-start">
+        <div className="max-w-4xl text-center sm:text-left relative">
           <div className="relative mb-4 md:mb-6 h-6 md:h-7 flex justify-center md:justify-start">
             <div
               className={`absolute inset-0 flex items-center justify-center md:justify-start gap-2 transition-all duration-500 ${
@@ -564,7 +564,8 @@ const Hero: React.FC = () => {
               }`}
             >
               <div className="h-px w-8 md:w-12 bg-aes-cyan hidden sm:block" />
-              <span className="text-aes-cyan font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase text-[9px] md:text-xs">
+              {/* Mobile h3 above main title */}
+              <span className="text-aes-cyan font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase text-[9px] md:text-xs hidden sm:block">
                 Hazardous Material Management Specialists
               </span>
             </div>
@@ -578,67 +579,52 @@ const Hero: React.FC = () => {
               <button
                 type="button"
                 onClick={handleControlClick}
-                className={`group inline-flex items-center gap-2 border border-white/40 bg-white/5 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold transition-all duration-300 hover:border-aes-cyan hover:text-aes-cyan ${
-                  isAudioActive
-                    ? "px-2 py-1 hover:px-4 hover:py-2 opacity-30 hover:opacity-100"
-                    : "px-4 py-2 opacity-100"
-                }`}
+                className={`inline-flex items-center gap-2 border border-white/40 bg-white/5 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold transition-all duration-300 hover:border-aes-cyan hover:text-aes-cyan px-4 py-2 opacity-100 sm:group`}
                 aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
                 aria-pressed={isPlaying}
               >
-                <span className="text-sm md:text-base">II</span>
-                <span className="hidden group-hover:inline">
-                  {isPlaying ? "PAUSE" : "EXPERIENCE"}
-                </span>
+                <span className="text-sm md:text-base">{isPlaying ? "II" : "▶"}</span>
                 <span
                   data-action="mute"
-                  className="ml-2 hidden items-center rounded-full border border-white/40 px-2 py-0.5 text-[8px] md:text-[9px] tracking-widest group-hover:inline-flex"
+                  className="ml-2 items-center rounded-full border border-white/40 px-2 py-0.5 text-[8px] md:text-[9px] tracking-widest"
                 >
                   {isMuted ? "UNMUTE" : "MUTE"}
-                </span>
-                <span
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setShowVolume((prev) => !prev);
-                  }}
-                  className="ml-1 hidden items-center rounded-full border border-white/40 px-2 py-0.5 text-[8px] md:text-[9px] tracking-widest group-hover:inline-flex"
-                >
-                  VOL
-                </span>
-                <span
-                  className={`overflow-hidden transition-all duration-200 ${
-                    showVolume ? "w-24 opacity-100" : "w-0 opacity-0"
-                  } hidden group-hover:inline-flex`}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={volume}
-                    onChange={handleVolumeInput}
-                    className="w-24 accent-aes-cyan"
-                  />
                 </span>
               </button>
             </div>
           </div>
 
           <div className="relative min-h-[220px] md:min-h-[320px]">
-            <h1 className="text-3xl sm:text-4xl md:text-7xl font-black leading-[1.2] mb-5 md:mb-5 text-center md:text-left">
+            {/* Mobile h3 above main title */}
+            <h1 className="text-3xl sm:text-4xl md:text-7xl font-black leading-[1.2] mb-5 md:mb-5 text-center sm:text-left">
               <span
-                className={`absolute inset-x-0 bottom-0 md:inset-0 text-aes-cyan text-center md:text-left transition-all duration-500 ${
+                className={`absolute inset-x-0 bottom-0 md:inset-0 text-aes-cyan text-left transition-all duration-500 ${
                   isAudioActive
                     ? "opacity-0 scale-95 pointer-events-none"
                     : "opacity-100 scale-100"
                 }`}
               >
+                <span className="block sm:hidden w-full mb-[20px]">
+                <div className="relative w-full flex items-center justify-between">
+                  <h3 className="text-aes-cyan text-[9px] font-bold tracking-[0.2em] uppercase text-left">DO NOT HESITATE, CALL ME</h3>
+                  <span className="absolute right-0">
+                    <a
+                      href="tel:0425257142"
+                      className="bg-aes-cyan rounded-full px-3 py-1 flex items-center"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <h3 className="text-white text-[11px] font-extrabold text-left">0425 257 142</h3>
+                    </a>
+                  </span>
+                </div>
+                </span>
+              <div className="aes-title-group">
                 <span className="text-white">Absolute</span>
                 <br />
                 <span className="text-white">Environmental</span>
                 <br />
                 <span>Services Safe Certified Trusted</span>
+              </div>
               </span>
               <span
                 ref={captionDisplayRef}
@@ -672,7 +658,7 @@ const Hero: React.FC = () => {
           />
 
           <div
-            className={`mt-[5px] mb-5 md:mb-6 flex justify-center md:justify-start transition-all duration-500 ${
+            className={`mt-[5px] mb-5 md:mb-6 flex justify-start md:justify-start transition-all duration-500 ${
               isAudioActive ? "opacity-0 pointer-events-none" : "opacity-100"
             }`}
           >
@@ -734,7 +720,7 @@ const Hero: React.FC = () => {
 
             <div className="flex flex-row flex-wrap gap-2 sm:gap-3 md:gap-4 justify-center md:justify-start">
               <button
-                className="w-auto bg-aes-cyan hover:bg-blue-600 hover:text-white text-white px-4 sm:px-6 md:px-10 py-2.5 sm:py-3 md:py-4 rounded font-bold text-[10px] sm:text-xs md:text-sm transition-all shadow-xl uppercase tracking-widest transform hover:-translate-y-1"
+                className="w-auto bg-aes-cyan hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef] text-white px-4 sm:px-6 md:px-10 py-2.5 sm:py-3 md:py-4 rounded font-bold text-[10px] sm:text-xs md:text-sm transition-all shadow-xl uppercase tracking-widest transform hover:-translate-y-1"
                 onClick={() => {
                   const target = document.getElementById("contact");
                   if (target) {

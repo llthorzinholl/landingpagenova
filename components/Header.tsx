@@ -95,55 +95,26 @@ const Header: React.FC = () => {
               href="tel:1300237287"
               target="_blank"
               rel="noreferrer"
-              className={`hidden sm:block font-bold transition-colors text-sm md:text-base ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"}`}
+              className={`hidden sm:block font-bold transition-transform text-sm md:text-base ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"} hover:scale-105 duration-200`}
+              style={{ transition: 'transform 0.2s' }}
             >
-              1300 237 287
+              0425 257 142
             </a>
             <div className="relative hidden sm:block">
               <button
                 type="button"
-                onClick={() => setIsEnquireOpen((prev) => !prev)}
-                className={`bg-aes-cyan hover:bg-aes-navy text-white px-4 md:px-6 py-2 md:py-2.5 rounded font-bold transition-all shadow-lg hover:shadow-aes-cyan/20 uppercase text-[10px] md:text-xs tracking-widest ${
-                  isEnquireOpen ? "rounded-b-none" : ""
-                }`}
-                aria-expanded={isEnquireOpen}
+                className="bg-aes-cyan hover:bg-aes-navy text-white px-4 md:px-6 py-2 md:py-2.5 rounded font-bold transition-transform shadow-lg hover:shadow-aes-cyan/20 uppercase text-[10px] md:text-xs tracking-widest hover:scale-105 duration-200"
+                style={{ transition: 'transform 0.2s' }}
+                onClick={() => {
+                  if (window.innerWidth < 1024) {
+                    window.location.href = 'tel:1300237287';
+                  } else {
+                    window.location.href = 'mailto:info@absoluteenvironmental.com.au';
+                  }
+                }}
               >
                 <span>Enquire Now</span>
               </button>
-              <div
-                className={`absolute left-0 top-0 w-max min-w-full bg-aes-cyan text-white rounded shadow-lg transition-all duration-300 ${
-                  isEnquireOpen
-                    ? "opacity-100 translate-y-0 max-h-32"
-                    : "pointer-events-none opacity-0 -translate-y-2 max-h-0"
-                }`}
-              >
-                <div className="relative px-4 md:px-6 py-3 text-left whitespace-nowrap">
-                  <button
-                    type="button"
-                    onClick={() => setIsEnquireOpen(false)}
-                    className="absolute right-2 top-2 text-white/80 hover:text-white text-xs transition-transform duration-200 hover:scale-125"
-                    aria-label="Close enquire panel"
-                  >
-                    X
-                  </button>
-                  <a
-                    href="tel:1300237287"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-200 hover:text-blue-600 hover:text-[17px] md:hover:text-[19px]"
-                  >
-                    1300 237 287
-                  </a>
-                  <a
-                    href="mailto:info@absoluteenvironmental.com.au"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block mt-1 text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-200 hover:text-blue-600 hover:text-[17px] md:hover:text-[19px]"
-                  >
-                    info@absoluteenvironmental.com.au
-                  </a>
-                </div>
-              </div>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -203,48 +174,17 @@ const Header: React.FC = () => {
           <div className="mt-8 flex flex-col gap-4 relative items-center">
             <button
               type="button"
-              onClick={() => setIsEnquireOpen((prev) => !prev)}
-              className={`bg-aes-cyan text-white rounded font-bold uppercase tracking-widest shadow-xl transition-all duration-300 py-4 text-[10px] ${
-                isEnquireOpen ? "rounded-b-none" : ""
-              }`}
-              aria-expanded={isEnquireOpen}
+              className="bg-aes-cyan text-white rounded font-bold uppercase tracking-widest shadow-xl transition-all duration-300 py-6 px-8 text-[10px]"
+              onClick={() => {
+                if (window.innerWidth < 1024) {
+                  window.location.href = 'tel:1300237287';
+                } else {
+                  window.location.href = 'mailto:info@absoluteenvironmental.com.au';
+                }
+              }}
             >
               <span>Enquire Now</span>
             </button>
-            <div
-              className={`absolute top-0 w-max min-w-full bg-aes-cyan text-white rounded shadow-xl transition-all duration-300 ${
-                isEnquireOpen
-                  ? "opacity-100 translate-y-0 max-h-32"
-                  : "pointer-events-none opacity-0 -translate-y-2 max-h-0"
-              }`}
-            >
-              <div className="relative px-4 py-3 text-left whitespace-nowrap">
-                <button
-                  type="button"
-                  onClick={() => setIsEnquireOpen(false)}
-                  className="absolute right-2 top-2 text-white/80 hover:text-white text-xs transition-transform duration-200 hover:scale-125"
-                  aria-label="Close enquire panel"
-                >
-                  X
-                </button>
-                <a
-                  href="tel:1300237287"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block text-sm font-semibold whitespace-nowrap transition-all duration-200 hover:text-blue-600 hover:text-[19px]"
-                >
-                  1300 237 287
-                </a>
-                <a
-                  href="mailto:info@absoluteenvironmental.com.au"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block mt-1 text-sm font-semibold whitespace-nowrap transition-all duration-200 hover:text-blue-600 hover:text-[19px]"
-                >
-                  info@absoluteenvironmental.com.au
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </div>
