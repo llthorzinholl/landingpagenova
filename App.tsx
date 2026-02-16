@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import logo from "./assets/novasImgs/logo.png";
-import aboutVideo from "./assets/novasImgs/videoPage.mp4";
 import Header from "./components/Header";
+import CookieConsent from "./components/CookieConsent";
 import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import { TESTIMONIALS } from "./constants";
+
+const VIMEO_EMBED_URL =
+  "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
+
 
 const aboutPortfolioEntries = Object.entries(
   import.meta.glob("./assets/AES/*.{jpeg,jpg,png}", {
@@ -13,6 +17,7 @@ const aboutPortfolioEntries = Object.entries(
     import: "default",
   }),
 ) as Array<[string, string]>;
+// Removido carregamento de arquivos de áudio inexistentes para evitar erros de rede
 
 const aboutPortfolioItems = aboutPortfolioEntries
   .sort(([a], [b]) => a.localeCompare(b))
@@ -74,6 +79,7 @@ const App: React.FC = () => {
       setIsSafetyVideoPlaying(false);
       video.currentTime = SAFETY_VIDEO_THUMB_TIME;
       video.pause();
+      // Não faz nada relacionado à opacidade
     };
 
     video.muted = true;
@@ -136,6 +142,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+      <CookieConsent />
       <Header />
 
       <main>
@@ -260,26 +267,31 @@ const App: React.FC = () => {
 
             <div
               data-reveal
-              className="reveal-item relative lg:h-[600px] hidden lg:block"
+              className="reveal-item relative hidden lg:block"
+              style={{ width: '960px', height: '540px' }}
               onMouseEnter={handleSafetyVideoEnter}
             >
-              <video
-                ref={safetyVideoRef}
-                className="rounded-lg shadow-2xl h-full w-full object-cover"
-                playsInline
-                preload="metadata"
+              <div
+                className="rounded-lg shadow-2xl h-full w-full overflow-hidden"
                 aria-label="Onsite remediation"
               >
-                <source src={aboutVideo} type="video/mp4" />
-              </video>
+                <iframe
+                  src={VIMEO_EMBED_URL}
+                  className="h-full w-full"
+                  frameBorder="0"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title="Onsite remediation"
+                />
+              </div>
+
               <div
-                className={`absolute bg-aes-cyan p-8 md:p-10 rounded shadow-2xl transform transition-all duration-500 ${
-                  isSafetyVideoPlaying
-                    ? "top-4 -left-10 translate-y-0"
-                    : "top-1/2 -left-10 -translate-y-1/2"
-                }`}
+                className={`absolute bg-aes-cyan p-6 md:p-7 rounded shadow-2xl transition-all duration-500
+                  ${isSafetyVideoPlaying ? "top-4 -left-10 translate-y-0" : "top-1/2 -left-10 -translate-y-1/2"}
+                `}
+                style={isSafetyVideoPlaying ? { top: '1rem', left: '-2.5rem', transform: 'none', width: '90%', maxWidth: '270px', opacity: 1 } : { top: '50%', left: '-2.5rem', transform: 'translateY(-50%)', width: '90%', maxWidth: '270px', opacity: 1 }}
               >
-                <p className="text-6xl font-black mb-2 text-white">100%</p>
+                <p className="text-5xl font-black mb-2 text-white">100%</p>
                 <p className="font-bold tracking-widest uppercase text-xs text-aes-navy">
                   Safety Rating
                 </p>

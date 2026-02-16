@@ -1,0 +1,29 @@
+/*
+  index.css
+  This file is required by Vite/React for global styles. You can add your Tailwind directives or custom CSS here.
+*/
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom global styles can be added below */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8fafc;
+}
+
+/* Example: Custom color for .bg-aes-navy and .bg-aes-cyan if not already in Tailwind config */
+.bg-aes-navy {
+  background-color: #1a2238;
+}
+.bg-aes-cyan {
+  background-color: #00aeef;
+}
+
+.text-aes-navy {
+  color: #1a2238;
+}
+.text-aes-cyan {
+  color: #00aeef;
+}
