@@ -618,13 +618,11 @@ const Hero: React.FC = () => {
                   </span>
                 </div>
                 </span>
-              <div className="aes-title-group">
-                <span className="text-white">Absolute</span>
+              <span className="text-white">Absolute</span>
                 <br />
                 <span className="text-white">Environmental</span>
                 <br />
                 <span>Services Safe Certified Trusted</span>
-              </div>
               </span>
               <span
                 ref={captionDisplayRef}

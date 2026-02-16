@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Absolute Environmental Services | Asbestos & Hazmat Specialists
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Montserrat", sans-serif;
+      }
+      .bg-aes-navy {
+        background-color: #002b49;
+      }
+      .textBt-aes-navy {
+        color: #002b49;
+      }
+      .text-aes-cyan {
+        color: #00aeef;
+      }
+      .bg-aes-cyan {
+        background-color: #00aeef;
+      }
+      .border-aes-cyan {
+        border-color: #00aeef;
+      }
+      .gradient-overlay {
+        background: linear-gradient(
+          to right,
+          rgba(0, 43, 73, 0.9),
+          rgba(0, 43, 73, 0.3)
+        );
+      }
+      .caption-clamp {
+        display: block;
+        overflow: hidden;
+        line-height: 1.15;
+        height: calc(2 * 1.15em);
+        padding-bottom: 0.1em;
+      }
+      .caption-clamp-4 {
+        display: block;
+        overflow: hidden;
+        line-height: 1.2;
+        height: calc(4 * 1.2em);
+        padding-bottom: 0.1em;
+      }
+      .word-reveal {
+        opacity: 0;
+        animation: wordReveal 0.12s linear forwards;
+      }
+      @keyframes wordReveal {
+        to {
+          opacity: 1;
+        }
+      }
+      .word-placeholder {
+        opacity: 0;
+      }
+      .word-smooth {
+        transition:
+          color 150ms ease,
+          transform 150ms ease;
+      }
+      .word-glow {
+        text-shadow:
+          0 0 8px rgba(255, 255, 255, 0.45),
+          0 0 18px rgba(255, 255, 255, 0.35),
+          0 0 36px rgba(0, 174, 239, 0.25);
+      }
+      .word-active {
+        transform: scale(1.08);
+      }
+      .reveal-item {
+        opacity: 0;
+        transform: translateY(16px) scale(0.99);
+        transition:
+          opacity 1600ms ease,
+          transform 1600ms cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: opacity, transform;
+      }
+      .reveal-item.is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      .aes-media-layer {
+        transition: opacity 2000ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .aes-media {
+        filter: saturate(1.1) contrast(1.08) brightness(0.92);
+        transform: scale(1.08);
+        animation: mediaFloat 18s ease-in-out infinite;
+        will-change: transform, filter;
+      }
+      @keyframes mediaFloat {
+        0% {
+          transform: scale(1.08) translateY(0);
+        }
+        50% {
+          transform: scale(1.12) translateY(-1.5%);
+        }
+        100% {
+          transform: scale(1.08) translateY(0);
+        }
+      }
+      @media (max-width: 767px) {
+        .aes-media {
+          transform: scale(1.26);
+        }
+        @keyframes mediaFloat {
+          0% {
+            transform: scale(1.26) translateY(0);
+          }
+          50% {
+            transform: scale(1.32) translateY(-1.5%);
+          }
+          100% {
+            transform: scale(1.26) translateY(0);
+          }
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .reveal-item {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
+          "react/": "https://esm.sh/react@^19.2.4/",
+          "react": "https://esm.sh/react@^19.2.4",
+          "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/index.css" />
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
