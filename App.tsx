@@ -6,8 +6,12 @@ import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import { TESTIMONIALS } from "./constants";
 
+
 const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
+
+// Placeholder para o vídeo
+const VIMEO_THUMB = "/assets/novasImgs/1.png";
 
 
 const aboutPortfolioEntries = Object.entries(
@@ -57,7 +61,10 @@ const App: React.FC = () => {
   const [selectedService, setSelectedService] = useState(
     "External Asbestos Removal",
   );
+
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  // Lazy load do vídeo Vimeo
+  const [vimeoLoaded, setVimeoLoaded] = useState(false);
 
   useEffect(() => {
     const video = safetyVideoRef.current;
@@ -269,22 +276,45 @@ const App: React.FC = () => {
               data-reveal
               className="reveal-item relative hidden lg:block"
               style={{ width: '960px', height: '540px' }}
-              onMouseEnter={handleSafetyVideoEnter}
             >
               <div
-                className="rounded-lg shadow-2xl h-full w-full overflow-hidden"
+                className="rounded-lg shadow-2xl h-full w-full overflow-hidden cursor-pointer bg-black/80 flex items-center justify-center"
                 aria-label="Onsite remediation"
+                style={{ minHeight: 540, minWidth: 960 }}
+                onClick={() => setVimeoLoaded(true)}
               >
-                <iframe
-                  src={VIMEO_EMBED_URL}
-                  className="h-full w-full"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                  title="Onsite remediation"
-                />
+                {!vimeoLoaded ? (
+                  <>
+                    <img
+                      src={VIMEO_THUMB}
+                      alt="Vimeo video placeholder"
+                      className="h-full w-full object-cover object-center transition-opacity duration-300"
+                      style={{ filter: 'blur(0.5px)' }}
+                      loading="lazy"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors"
+                      style={{ border: 'none', width: '100%', height: '100%', cursor: 'pointer' }}
+                      aria-label="Carregar vídeo Vimeo"
+                    >
+                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="40" fill="#00aeef" fillOpacity="0.85" />
+                        <polygon points="32,25 60,40 32,55" fill="#fff" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <iframe
+                    src={VIMEO_EMBED_URL}
+                    className="h-full w-full"
+                    frameBorder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    title="Onsite remediation"
+                  />
+                )}
               </div>
-
               <div
                 className={`absolute bg-aes-cyan p-6 md:p-7 rounded shadow-2xl transition-all duration-500
                   ${isSafetyVideoPlaying ? "top-4 -left-10 translate-y-0" : "top-1/2 -left-10 -translate-y-1/2"}
