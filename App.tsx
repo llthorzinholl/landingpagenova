@@ -5,13 +5,14 @@ import CookieConsent from "./components/CookieConsent";
 import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import { TESTIMONIALS } from "./constants";
+import asbestosImage from "./assets/novasImgs/1.webp";
 
 
 const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 
 // Placeholder para o vídeo
-const VIMEO_THUMB = "../assets/novasImgs/1.webp";
+const VIMEO_THUMB = asbestosImage;
 
 
 const aboutPortfolioEntries = Object.entries(
