@@ -1,5 +1,5 @@
 import { Service, Testimonial } from "./types";
-import asbestosImage from "./assets/novasImgs/1.png";
+import asbestosImage from "./assets/novasImgs/1.webp";
 
 export const SERVICES: Service[] = [
   {
@@ -17,7 +17,7 @@ export const SERVICES: Service[] = [
     description:
       "Controlled internal removal from walls, ceilings, bathrooms and plant rooms, with full containment, clearance and safe disposal.",
     icon: "🏠",
-    image: "/assets/novasImgs/2.png",
+    image: "/assets/novasImgs/2.webp",
     revealDelay: 200,
   },
   {
@@ -26,7 +26,7 @@ export const SERVICES: Service[] = [
     description:
       "Specialist removal of asbestos roofing and eaves, including safe strip-out, transport and compliant disposal to protect your site.",
     icon: "🏗️",
-    image: "/assets/novasImgs/3.png",
+    image: "/assets/novasImgs/3.webp",
     revealDelay: 400,
   },
   {
@@ -35,7 +35,7 @@ export const SERVICES: Service[] = [
     description:
       "Immediate risk controls for damaged or exposed asbestos, securing the area and stabilizing materials until full removal.",
     icon: "⚠️",
-    image: "/assets/novasImgs/4.png",
+    image: "/assets/novasImgs/4.webp",
     revealDelay: 600,
   },
 ];
