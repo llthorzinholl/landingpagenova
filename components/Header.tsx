@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import logo from "../assets/novasImgs/logo.png";
+import logo from "../assets/novasImgs/logo.webp";
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
