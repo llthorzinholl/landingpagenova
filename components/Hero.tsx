@@ -101,7 +101,7 @@ const PHRASE_RANGES = PHRASE_WORDS.reduce<{ start: number; end: number }[]>(
 );
 
 const mediaEntries = Object.entries(
-  import.meta.glob("../assets/AES/*.{jpeg,jpg,png,mp4}", {
+  import.meta.glob("../assets/AES/*.{jpeg,jpg,png,mp4,webp}", {
     eager: true,
     query: "?url",
     import: "default",
