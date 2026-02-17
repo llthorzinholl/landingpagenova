@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import logo from "./assets/novasImgs/logo.png";
+import logo from "./assets/novasImgs/logo.webp";
 import Header from "./components/Header";
 import CookieConsent from "./components/CookieConsent";
 import Hero from "./components/Hero";
@@ -11,11 +11,11 @@ const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 
 // Placeholder para o vídeo
-const VIMEO_THUMB = "/assets/novasImgs/1.png";
+const VIMEO_THUMB = "/assets/novasImgs/1.webp";
 
 
 const aboutPortfolioEntries = Object.entries(
-  import.meta.glob("./assets/AES/*.{jpeg,jpg,png}", {
+  import.meta.glob("./assets/AES/*.{jpeg,jpg,png,webp}", {
     eager: true,
     query: "?url",
     import: "default",
