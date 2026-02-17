@@ -323,7 +323,7 @@ const App: React.FC = () => {
                 style={isSafetyVideoPlaying ? { top: '1rem', left: '-2.5rem', transform: 'none', width: '90%', maxWidth: '270px', opacity: 1 } : { top: '50%', left: '-2.5rem', transform: 'translateY(-50%)', width: '90%', maxWidth: '270px', opacity: 1 }}
               >
                 <p className="text-5xl font-black mb-2 text-white">100%</p>
-                <p className="font-bold tracking-widest uppercase text-xs text-aes-navy">
+                <p className="font-black text-white tracking-widest uppercase text-xs text-aes-navy">
                   Safety Rating
                 </p>
               </div>
