@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import logo from "./assets/novasImgs/logo.webp";
 import Header from "./components/Header";
@@ -9,8 +10,6 @@ import asbestosImage from "./assets/novasImgs/1.webp";
 
 const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
-
-// Placeholder para o vídeo
 const VIMEO_THUMB = asbestosImage;
 
 const aboutPortfolioEntries = Object.entries(
@@ -18,9 +17,8 @@ const aboutPortfolioEntries = Object.entries(
     eager: true,
     query: "?url",
     import: "default",
-  }),
+  })
 ) as Array<[string, string]>;
-
 const aboutPortfolioItems = aboutPortfolioEntries
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([path, src], index) => {
@@ -35,45 +33,35 @@ const aboutPortfolioItems = aboutPortfolioEntries
         : "Result after safe removal and cleanup.",
     };
   });
-
-const aboutPortfolioPairs = aboutPortfolioItems.reduce<
-  Array<{
-    pairNumber: number;
-    before: (typeof aboutPortfolioItems)[number];
-    after?: (typeof aboutPortfolioItems)[number];
-  }>
->((acc, item, index) => {
-  if (index % 2 === 0) {
-    acc.push({ pairNumber: Math.floor(index / 2) + 1, before: item });
-  } else {
-    acc[acc.length - 1].after = item;
-  }
-  return acc;
-}, []);
+const aboutPortfolioPairs = aboutPortfolioItems.reduce(
+  (acc, item, index) => {
+    if (index % 2 === 0) {
+      acc.push({ pairNumber: Math.floor(index / 2) + 1, before: item });
+    } else {
+      acc[acc.length - 1].after = item;
+    }
+    return acc;
+  },
+  []
+);
 
 const App: React.FC = () => {
-    const [submitSuccess, setSubmitSuccess] = useState(false);
-  // UI
+
+  const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [vimeoLoaded, setVimeoLoaded] = useState(false);
-
-  // Form states
   const [globalError, setGlobalError] = useState<string | null>(null);
-
   const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState(""); // aqui é SEM +61 (ex: 4xxxxxxxx ou 2xxxxxxxx)
+  const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactService, setContactService] = useState("External Asbestos Removal");
   const [contactDesc, setContactDesc] = useState("");
-
-  // Validation
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
     phone?: string;
     message?: string;
   }>({});
-
   const [touched, setTouched] = useState<{
     name?: boolean;
     email?: boolean;
@@ -83,32 +71,23 @@ const App: React.FC = () => {
 
   const validateAll = () => {
     const newErrors: typeof errors = {};
-
-    // Name
     if (!contactName || contactName.trim().length < 2) {
       newErrors.name = "Invalid name";
     }
-
-    // Email
     const email = contactEmail.trim();
     const emailOk = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(email);
     if (!emailOk) {
       newErrors.email = "Invalid email";
     }
-
-    // Phone: só aceita se começar com 0 (10 dígitos) ou 4 (9 dígitos)
-        const phoneDigits = contactPhone.replace(/\D/g, "");
-        if (!phoneDigits || phoneDigits.length < 9 || phoneDigits.length > 10) {
-          newErrors.phone = "Invalid phone";
-        } else if (!/^0|^4/.test(phoneDigits)) {
-          newErrors.phone = "Invalid phone";
-        }
-
-    // Message
+    const phoneDigits = contactPhone.replace(/\D/g, "");
+    if (!phoneDigits || phoneDigits.length < 9 || phoneDigits.length > 10) {
+      newErrors.phone = "Invalid phone";
+    } else if (!/^0|^4/.test(phoneDigits)) {
+      newErrors.phone = "Invalid phone";
+    }
     if (!contactDesc || contactDesc.trim().length < 10) {
       newErrors.message = "Message too short";
     }
-
     return newErrors;
   };
 
@@ -120,44 +99,35 @@ const App: React.FC = () => {
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const validation = validateAll();
     setErrors(validation);
     setTouched({ name: true, email: true, phone: true, message: true });
-
     if (Object.keys(validation).length > 0) {
       setGlobalError("Please correct the highlighted fields.");
       return;
     }
-
     setGlobalError(null);
-
     try {
       const res = await fetch("/api/landing-page-form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           full_name: contactName.trim(),
-          // você exibe +61 no UI; aqui mandamos com +61 já pronto:
           phone_number: `+61${contactPhone.replace(/\D/g, "")}`,
           email_address: contactEmail.trim().toLowerCase(),
           service_type: contactService,
           description: contactDesc.trim(),
         }),
       });
-
       const text = await res.text();
       let payload: any = null;
       try {
         payload = JSON.parse(text);
       } catch {}
-
       if (!res.ok) {
         setGlobalError(payload?.error || "Failed to send. Please try again.");
         return;
       }
-
-      // reset
       setContactName("");
       setContactPhone("");
       setContactEmail("");
@@ -170,19 +140,17 @@ const App: React.FC = () => {
       setTimeout(() => setSubmitSuccess(false), 2000);
     } catch (err) {
       setGlobalError("Network error. Please try again.");
-      console.error("NETWORK ERROR:", err);
     }
   };
 
   useEffect(() => {
     const items = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-reveal]"),
+      document.querySelectorAll<HTMLElement>("[data-reveal]")
     );
     if (!("IntersectionObserver" in window)) {
       items.forEach((item) => item.classList.add("is-visible"));
       return;
     }
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -192,11 +160,9 @@ const App: React.FC = () => {
           }
         });
       },
-      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" },
+      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
     );
-
     items.forEach((item) => observer.observe(item));
-
     return () => {
       observer.disconnect();
     };

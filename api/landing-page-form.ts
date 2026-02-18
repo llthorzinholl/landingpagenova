@@ -1,8 +1,24 @@
+
 import { neon } from "@neondatabase/serverless";
+// Simple sanitization utility
+function sanitizeInput(input: string): string {
+  return String(input).replace(/[<>"'`]/g, "");
+}
 
 export default async function handler(req: any, res: any) {
   // CORS (não atrapalha mesmo-origin e evita OPTIONS)
-  res.setHeader("Access-Control-Allow-Origin", "*");
+
+  // Restrict CORS to trusted domains in production
+  const allowedOrigins = [
+    "https://aeslanding.com", // example production domain
+    "http://localhost:3000"
+  ];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigins[0]);
+  }
   res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
@@ -58,10 +74,23 @@ export default async function handler(req: any, res: any) {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body ?? {});
 
-    const { full_name, phone_number, email_address, service_type, description } = body;
 
+    let { full_name, phone_number, email_address, service_type, description } = body;
+
+    // Sanitize all inputs
+    full_name = full_name ? sanitizeInput(full_name) : "";
+    phone_number = phone_number ? sanitizeInput(phone_number) : "";
+    email_address = email_address ? sanitizeInput(email_address) : "";
+    service_type = service_type ? sanitizeInput(service_type) : "";
+    description = description ? sanitizeInput(description) : "";
+
+    // Validate required fields and email format
     if (!full_name || !email_address) {
       return res.status(400).json({ error: "Name and email are required" });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email_address)) {
+      return res.status(400).json({ error: "Invalid email format" });
     }
 
     const sql = neon(process.env.DATABASE_URL!);
@@ -75,6 +104,8 @@ export default async function handler(req: any, res: any) {
       });
     }
 
+
+    // Use parameterized queries (already safe with neon)
     await sql`
       INSERT INTO landing_page_uploads
         (full_name, phone_number, email_address, service_type, description)
@@ -84,10 +115,13 @@ export default async function handler(req: any, res: any) {
 
     return res.status(200).json({ success: true });
   } catch (err: any) {
-    console.error("FUNCTION ERROR:", err);
+    // Log error only in non-production
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.error("FUNCTION ERROR:", err);
+    }
     return res.status(500).json({
-      error: "Internal Server Error",
-      details: err?.message ?? String(err),
+      error: "Internal Server Error"
     });
   }
 }
