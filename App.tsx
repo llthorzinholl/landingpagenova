@@ -96,17 +96,13 @@ const App: React.FC = () => {
       newErrors.email = "Invalid email";
     }
 
-    // Phone (AU) — como você tem +61 fixo no UI:
-    // Aceita:
-    // - Mobile: 4xxxxxxxx (9 dígitos)
-    // - Landline: 2xxxxxxxx / 3xxxxxxxx / 7xxxxxxxx / 8xxxxxxxx (9 dígitos)
-    const phoneDigits = contactPhone.replace(/\D/g, "");
-    const isMobile = /^4\d{8}$/.test(phoneDigits);
-    const isLandline = /^[2378]\d{8}$/.test(phoneDigits);
-
-    if (!phoneDigits || !(isMobile || isLandline)) {
-      newErrors.phone = "Invalid phone";
-    }
+    // Phone: só aceita se começar com 0 (10 dígitos) ou 4 (9 dígitos)
+        const phoneDigits = contactPhone.replace(/\D/g, "");
+        if (!phoneDigits || phoneDigits.length < 9 || phoneDigits.length > 10) {
+          newErrors.phone = "Invalid phone";
+        } else if (!/^0|^4/.test(phoneDigits)) {
+          newErrors.phone = "Invalid phone";
+        }
 
     // Message
     if (!contactDesc || contactDesc.trim().length < 10) {
@@ -582,7 +578,7 @@ const App: React.FC = () => {
                           type="tel"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          maxLength={9}
+                          maxLength={10}
                           className={`w-full bg-slate-50 rounded-r px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border border-l-0 ${
                             errors.phone && touched.phone
                               ? "border-red-500 placeholder-red-500 text-red-500"
@@ -592,7 +588,7 @@ const App: React.FC = () => {
                           onChange={(e) => {
                             const onlyNums = e.target.value
                               .replace(/\D/g, "")
-                              .slice(0, 9);
+                              .slice(0, 10);
                             setContactPhone(onlyNums);
                             if (touched.phone) {
                               const v = validateAll();
@@ -601,9 +597,11 @@ const App: React.FC = () => {
                           }}
                           onBlur={() => handleBlur("phone")}
                           placeholder={
-                            errors.phone && touched.phone ? "Invalid phone" : "4xxxxxxxx"
+                            errors.phone && touched.phone ? "Invalid phone" : "4xxxxxxxxxx"
                           }
                         />
+                        
+                       
                       </div>
 
                       {errors.phone && touched.phone && (
