@@ -7,13 +7,11 @@ import ServicesSection from "./components/ServicesSection";
 import { TESTIMONIALS } from "./constants";
 import asbestosImage from "./assets/novasImgs/1.webp";
 
-
 const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 
 // Placeholder para o vídeo
 const VIMEO_THUMB = asbestosImage;
-
 
 const aboutPortfolioEntries = Object.entries(
   import.meta.glob("./assets/AES/*.{jpeg,jpg,png,webp}", {
@@ -22,7 +20,6 @@ const aboutPortfolioEntries = Object.entries(
     import: "default",
   }),
 ) as Array<[string, string]>;
-// Removido carregamento de arquivos de áudio inexistentes para evitar erros de rede
 
 const aboutPortfolioItems = aboutPortfolioEntries
   .sort(([a], [b]) => a.localeCompare(b))
@@ -64,8 +61,51 @@ const App: React.FC = () => {
   );
 
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
-  // Lazy load do vídeo Vimeo
   const [vimeoLoaded, setVimeoLoaded] = useState(false);
+
+  // ✅ Estados do formulário (FORA do JSX)
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactService, setContactService] = useState(
+    "External Asbestos Removal",
+  );
+  const [contactDesc, setContactDesc] = useState("");
+
+  // ✅ Submit handler (FORA do JSX)
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const res = await fetch("/api/landing-page-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: contactName,
+          phone_number: contactPhone,
+          email_address: contactEmail, // ✅ nome correto
+          service_type: contactService,
+          description: contactDesc,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to send inquiry");
+      }
+
+      setContactName("");
+      setContactPhone("");
+      setContactEmail("");
+      setContactService("External Asbestos Removal");
+      setContactDesc("");
+
+      alert("Inquiry sent successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error sending inquiry.");
+    }
+  };
 
   useEffect(() => {
     const video = safetyVideoRef.current;
@@ -87,7 +127,6 @@ const App: React.FC = () => {
       setIsSafetyVideoPlaying(false);
       video.currentTime = SAFETY_VIDEO_THUMB_TIME;
       video.pause();
-      // Não faz nada relacionado à opacidade
     };
 
     video.muted = true;
@@ -144,7 +183,7 @@ const App: React.FC = () => {
     try {
       await video.play();
     } catch {
-      // Autoplay might be blocked; hover intent still sets the start frame.
+      // autoplay might be blocked
     }
   };
 
@@ -276,7 +315,8 @@ const App: React.FC = () => {
             <div
               data-reveal
               className="reveal-item relative hidden lg:block"
-              style={{ width: '960px', height: '540px' }}
+              style={{ width: "960px", height: "540px" }}
+              onMouseEnter={handleSafetyVideoEnter}
             >
               <div
                 className="rounded-lg shadow-2xl h-full w-full overflow-hidden cursor-pointer bg-black/80 flex items-center justify-center"
@@ -290,17 +330,34 @@ const App: React.FC = () => {
                       src={VIMEO_THUMB}
                       alt="Vimeo video placeholder"
                       className="h-full w-full object-cover object-center transition-opacity duration-300"
-                      style={{ filter: 'blur(0.5px)' }}
+                      style={{ filter: "blur(0.5px)" }}
                       loading="lazy"
                     />
                     <button
                       type="button"
                       className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors"
-                      style={{ border: 'none', width: '100%', height: '100%', cursor: 'pointer' }}
+                      style={{
+                        border: "none",
+                        width: "100%",
+                        height: "100%",
+                        cursor: "pointer",
+                      }}
                       aria-label="Carregar vídeo Vimeo"
                     >
-                      <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="40" cy="40" r="40" fill="#00aeef" fillOpacity="0.85" />
+                      <svg
+                        width="80"
+                        height="80"
+                        viewBox="0 0 80 80"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="40"
+                          fill="#00aeef"
+                          fillOpacity="0.85"
+                        />
                         <polygon points="32,25 60,40 32,55" fill="#fff" />
                       </svg>
                     </button>
@@ -316,11 +373,34 @@ const App: React.FC = () => {
                   />
                 )}
               </div>
+
               <div
                 className={`absolute bg-aes-cyan p-6 md:p-7 rounded shadow-2xl transition-all duration-500
-                  ${isSafetyVideoPlaying ? "top-4 -left-10 translate-y-0" : "top-1/2 -left-10 -translate-y-1/2"}
+                  ${
+                    isSafetyVideoPlaying
+                      ? "top-4 -left-10 translate-y-0"
+                      : "top-1/2 -left-10 -translate-y-1/2"
+                  }
                 `}
-                style={isSafetyVideoPlaying ? { top: '1rem', left: '-2.5rem', transform: 'none', width: '90%', maxWidth: '270px', opacity: 1 } : { top: '50%', left: '-2.5rem', transform: 'translateY(-50%)', width: '90%', maxWidth: '270px', opacity: 1 }}
+                style={
+                  isSafetyVideoPlaying
+                    ? {
+                        top: "1rem",
+                        left: "-2.5rem",
+                        transform: "none",
+                        width: "90%",
+                        maxWidth: "270px",
+                        opacity: 1,
+                      }
+                    : {
+                        top: "50%",
+                        left: "-2.5rem",
+                        transform: "translateY(-50%)",
+                        width: "90%",
+                        maxWidth: "270px",
+                        opacity: 1,
+                      }
+                }
               >
                 <p className="text-5xl font-black mb-2 text-white">100%</p>
                 <p className="font-black text-white tracking-widest uppercase text-xs text-aes-navy">
@@ -451,10 +531,11 @@ const App: React.FC = () => {
                         type="text"
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
                         value={contactName}
-                        onChange={e => setContactName(e.target.value)}
+                        onChange={(e) => setContactName(e.target.value)}
                         required
                       />
                     </div>
+
                     <div>
                       <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                         Phone Number
@@ -463,10 +544,11 @@ const App: React.FC = () => {
                         type="tel"
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
                         value={contactPhone}
-                        onChange={e => setContactPhone(e.target.value)}
+                        onChange={(e) => setContactPhone(e.target.value)}
                       />
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                       Email Address
@@ -475,10 +557,11 @@ const App: React.FC = () => {
                       type="email"
                       className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
                       value={contactEmail}
-                      onChange={e => setContactEmail(e.target.value)}
+                      onChange={(e) => setContactEmail(e.target.value)}
                       required
                     />
                   </div>
+
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                       Service Type
@@ -487,7 +570,7 @@ const App: React.FC = () => {
                       <select
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all appearance-none"
                         value={contactService}
-                        onChange={e => setContactService(e.target.value)}
+                        onChange={(e) => setContactService(e.target.value)}
                       >
                         <option>External Asbestos Removal</option>
                         <option>Internal Asbestos Removal</option>
@@ -512,6 +595,7 @@ const App: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                       Description
@@ -521,42 +605,10 @@ const App: React.FC = () => {
                       className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all resize-none"
                       placeholder="Tell us what you need..."
                       value={contactDesc}
-                      onChange={e => setContactDesc(e.target.value)}
+                      onChange={(e) => setContactDesc(e.target.value)}
                     />
-                  // ...existing code...
-                  // Estados para o formulário de contato
-                  const [contactName, setContactName] = useState("");
-                  const [contactPhone, setContactPhone] = useState("");
-                  const [contactEmail, setContactEmail] = useState("");
-                  const [contactService, setContactService] = useState("External Asbestos Removal");
-                  const [contactDesc, setContactDesc] = useState("");
-
-                  // Função para envio do formulário de contato
-                  const handleContactSubmit = async (e: React.FormEvent) => {
-                    e.preventDefault();
-                    try {
-                      await fetch("/api/contact", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          full_name: contactName,
-                          phone_number: contactPhone,
-                          email: contactEmail,
-                          service_type: contactService,
-                          description: contactDesc
-                        })
-                      });
-                      setContactName("");
-                      setContactPhone("");
-                      setContactEmail("");
-                      setContactService("External Asbestos Removal");
-                      setContactDesc("");
-                      alert("Inquiry sent successfully!");
-                    } catch (err) {
-                      alert("Error sending inquiry.");
-                    }
-                  };
                   </div>
+
                   <div className="flex justify-center">
                     <button
                       type="submit"
@@ -567,6 +619,7 @@ const App: React.FC = () => {
                   </div>
                 </form>
               </div>
+
               <div
                 data-reveal
                 className="reveal-item lg:w-[400px] bg-aes-navy p-8 md:p-12 lg:p-20 flex flex-col justify-center text-white"
@@ -584,6 +637,7 @@ const App: React.FC = () => {
                     1300 237 287
                   </a>
                 </div>
+
                 <div className="mb-8 md:mb-12">
                   <p className="text-aes-cyan font-bold uppercase tracking-widest text-[10px] mb-4">
                     Email Us
@@ -605,6 +659,7 @@ const App: React.FC = () => {
                     ghsilva2895@gmail.com
                   </a>
                 </div>
+
                 <div>
                   <p className="text-aes-cyan font-bold uppercase tracking-widest text-[10px] mb-4">
                     Location
