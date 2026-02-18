@@ -1,9 +1,11 @@
 import express from 'express';
 import pkg from 'pg';
 import cors from 'cors';
+
 const { Pool } = pkg;
 
-const app = express();
+const app = express();   // 👈 APP PRECISA VIR ANTES DE QUALQUER app.post
+
 app.use(express.json());
 app.use(cors());
 
@@ -37,6 +39,12 @@ app.get('/api/messages', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.get("/", (req, res) => {
+  res.send("API running ✅");
+});
+

@@ -441,7 +441,7 @@ const App: React.FC = () => {
                   your property needs.
                 </p>
 
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleContactSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
@@ -450,6 +450,9 @@ const App: React.FC = () => {
                       <input
                         type="text"
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
+                        value={contactName}
+                        onChange={e => setContactName(e.target.value)}
+                        required
                       />
                     </div>
                     <div>
@@ -459,6 +462,8 @@ const App: React.FC = () => {
                       <input
                         type="tel"
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
+                        value={contactPhone}
+                        onChange={e => setContactPhone(e.target.value)}
                       />
                     </div>
                   </div>
@@ -469,6 +474,9 @@ const App: React.FC = () => {
                     <input
                       type="email"
                       className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
+                      value={contactEmail}
+                      onChange={e => setContactEmail(e.target.value)}
+                      required
                     />
                   </div>
                   <div>
@@ -478,10 +486,8 @@ const App: React.FC = () => {
                     <div className="relative">
                       <select
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all appearance-none"
-                        value={selectedService}
-                        onChange={(event) =>
-                          setSelectedService(event.target.value)
-                        }
+                        value={contactService}
+                        onChange={e => setContactService(e.target.value)}
                       >
                         <option>External Asbestos Removal</option>
                         <option>Internal Asbestos Removal</option>
@@ -514,7 +520,42 @@ const App: React.FC = () => {
                       rows={4}
                       className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all resize-none"
                       placeholder="Tell us what you need..."
+                      value={contactDesc}
+                      onChange={e => setContactDesc(e.target.value)}
                     />
+                  // ...existing code...
+                  // Estados para o formulário de contato
+                  const [contactName, setContactName] = useState("");
+                  const [contactPhone, setContactPhone] = useState("");
+                  const [contactEmail, setContactEmail] = useState("");
+                  const [contactService, setContactService] = useState("External Asbestos Removal");
+                  const [contactDesc, setContactDesc] = useState("");
+
+                  // Função para envio do formulário de contato
+                  const handleContactSubmit = async (e: React.FormEvent) => {
+                    e.preventDefault();
+                    try {
+                      await fetch("/api/contact", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          full_name: contactName,
+                          phone_number: contactPhone,
+                          email: contactEmail,
+                          service_type: contactService,
+                          description: contactDesc
+                        })
+                      });
+                      setContactName("");
+                      setContactPhone("");
+                      setContactEmail("");
+                      setContactService("External Asbestos Removal");
+                      setContactDesc("");
+                      alert("Inquiry sent successfully!");
+                    } catch (err) {
+                      alert("Error sending inquiry.");
+                    }
+                  };
                   </div>
                   <div className="flex justify-center">
                     <button
