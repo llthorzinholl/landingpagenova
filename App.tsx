@@ -52,6 +52,7 @@ const aboutPortfolioPairs = aboutPortfolioItems.reduce<
 }, []);
 
 const App: React.FC = () => {
+    const [submitSuccess, setSubmitSuccess] = useState(false);
   // UI
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [vimeoLoaded, setVimeoLoaded] = useState(false);
@@ -169,6 +170,8 @@ const App: React.FC = () => {
       setErrors({});
       setTouched({});
       setGlobalError(null);
+      setSubmitSuccess(true);
+      setTimeout(() => setSubmitSuccess(false), 2000);
     } catch (err) {
       setGlobalError("Network error. Please try again.");
       console.error("NETWORK ERROR:", err);
@@ -725,9 +728,15 @@ const App: React.FC = () => {
                   <div className="flex justify-center">
                     <button
                       type="submit"
-                      className="mt-10 md:mt-12 bg-aes-cyan duration-300 hover:bg-white hover:text-[#00aeef] border hover:border-[#00aeef] text-white px-10 md:px-16 hover:px-14 py-4 rounded font-bold transition-all uppercase text-xs tracking-widest"
+                      disabled={submitSuccess}
+                      className={
+                        submitSuccess
+                          ? "mt-10 md:mt-12 bg-green-500 text-white rounded-full w-24 h-12 md:w-28 md:h-14 flex items-center justify-center text-lg font-bold transition-all duration-500 shadow-lg scale-110"
+                          : "mt-10 md:mt-12 bg-aes-cyan duration-300 hover:bg-white hover:text-[#00aeef] border hover:border-[#00aeef] text-white px-10 md:px-16 hover:px-14 py-4 rounded font-bold transition-all uppercase text-xs tracking-widest"
+                      }
+                      style={submitSuccess ? { minWidth: '96px', minHeight: '48px', padding: 0 } : {}}
                     >
-                      Submit Inquiry
+                      {submitSuccess ? 'Done' : 'Submit Inquiry'}
                     </button>
                   </div>
                 </form>
