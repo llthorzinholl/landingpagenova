@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "./assets/novasImgs/logo.webp";
 import Header from "./components/Header";
 import CookieConsent from "./components/CookieConsent";
@@ -51,163 +51,129 @@ const aboutPortfolioPairs = aboutPortfolioItems.reduce<
   return acc;
 }, []);
 
-const SAFETY_VIDEO_THUMB_TIME = 56.3;
-
 const App: React.FC = () => {
-<<<<<<< HEAD
-=======
-  // Removido country/postalCode
-      const [globalError, setGlobalError] = useState<string | null>(null);
-    // Validação simples
-    const [errors, setErrors] = useState<{ name?: string; email?: string; phone?: string; message?: string }>({});
-    const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; phone?: boolean; message?: boolean }>({});
-
-    function validateAll() {
-      const newErrors: typeof errors = {};
-      if (!contactName || contactName.trim().length < 2) newErrors.name = "Invalid name";
-      if (!contactEmail || !/^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(contactEmail)) newErrors.email = "Invalid email";
-      const phoneDigits = contactPhone.replace(/\D/g, '');
-      if (!contactPhone) {
-        newErrors.phone = "Invalid phone";
-      } else if (/^0/.test(phoneDigits) && phoneDigits.length === 9) {
-        // Começa com 0 e tem 9 dígitos: inválido
-        newErrors.phone = "Invalid phone";
-      } else if (
-        // Começa com 0 e tem 10 dígitos: válido
-        (/^04/.test(phoneDigits) && (phoneDigits.length === 10)) ||
-        // Começa com 4 e tem 9 ou 10 dígitos: válido
-        (/^4/.test(phoneDigits) && (phoneDigits.length === 9 || phoneDigits.length === 10))
-      ) {
-        // válido
-      } else {
-        newErrors.phone = "Invalid phone";
-      }
-      if (!contactDesc || contactDesc.trim().length < 10) newErrors.message = "Message too short";
-      return newErrors;
-    }
-
-    function handleBlur(field: keyof typeof errors) {
-      setTouched((prev) => ({ ...prev, [field]: true }));
-      setErrors((prev) => ({ ...prev, [field]: validateAll()[field] }));
-    }
->>>>>>> 1d289ab (initial commit)
-  const safetyVideoRef = useRef<HTMLVideoElement | null>(null);
-  const [isSafetyVideoPlaying, setIsSafetyVideoPlaying] = useState(false);
-  const [selectedService, setSelectedService] = useState(
-    "External Asbestos Removal",
-  );
-
+  // UI
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [vimeoLoaded, setVimeoLoaded] = useState(false);
 
-  // ✅ Estados do formulário (FORA do JSX)
+  // Form states
+  const [globalError, setGlobalError] = useState<string | null>(null);
+
   const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
+  const [contactPhone, setContactPhone] = useState(""); // aqui é SEM +61 (ex: 4xxxxxxxx ou 2xxxxxxxx)
   const [contactEmail, setContactEmail] = useState("");
-  const [contactService, setContactService] = useState(
-    "External Asbestos Removal",
-  );
+  const [contactService, setContactService] = useState("External Asbestos Removal");
   const [contactDesc, setContactDesc] = useState("");
 
-  // ✅ Submit handler (FORA do JSX)
-const handleContactSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-<<<<<<< HEAD
-=======
-  const validation = validateAll();
-  setErrors(validation);
-  setTouched({ name: true, email: true, phone: true, message: true });
-  if (Object.keys(validation).length > 0) {
-    setGlobalError(validation.email || validation.name || validation.phone || validation.message || "Please correct the errors.");
-    return;
-  }
-  setGlobalError(null);
->>>>>>> 1d289ab (initial commit)
+  // Validation
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    message?: string;
+  }>({});
 
-  try {
-    const res = await fetch("/api/landing-page-form", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        full_name: contactName,
-        phone_number: contactPhone,
-        email_address: contactEmail,
-        service_type: contactService,
-        description: contactDesc,
-      }),
-    });
+  const [touched, setTouched] = useState<{
+    name?: boolean;
+    email?: boolean;
+    phone?: boolean;
+    message?: boolean;
+  }>({});
 
-<<<<<<< HEAD
-    const text = await res.text(); // pega resposta mesmo se não for JSON
-=======
-    const text = await res.text();
->>>>>>> 1d289ab (initial commit)
-    let payload: any = null;
-    try { payload = JSON.parse(text); } catch {}
+  const validateAll = () => {
+    const newErrors: typeof errors = {};
 
-    if (!res.ok) {
-      console.error("API ERROR:", res.status, payload ?? text);
-<<<<<<< HEAD
-      alert(`Error ${res.status}: ${payload?.error ?? text ?? "Unknown error"}`);
-=======
->>>>>>> 1d289ab (initial commit)
+    // Name
+    if (!contactName || contactName.trim().length < 2) {
+      newErrors.name = "Invalid name";
+    }
+
+    // Email
+    const email = contactEmail.trim();
+    const emailOk = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(email);
+    if (!emailOk) {
+      newErrors.email = "Invalid email";
+    }
+
+    // Phone (AU) — como você tem +61 fixo no UI:
+    // Aceita:
+    // - Mobile: 4xxxxxxxx (9 dígitos)
+    // - Landline: 2xxxxxxxx / 3xxxxxxxx / 7xxxxxxxx / 8xxxxxxxx (9 dígitos)
+    const phoneDigits = contactPhone.replace(/\D/g, "");
+    const isMobile = /^4\d{8}$/.test(phoneDigits);
+    const isLandline = /^[2378]\d{8}$/.test(phoneDigits);
+
+    if (!phoneDigits || !(isMobile || isLandline)) {
+      newErrors.phone = "Invalid phone";
+    }
+
+    // Message
+    if (!contactDesc || contactDesc.trim().length < 10) {
+      newErrors.message = "Message too short";
+    }
+
+    return newErrors;
+  };
+
+  const handleBlur = (field: keyof typeof errors) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const v = validateAll();
+    setErrors((prev) => ({ ...prev, [field]: v[field] }));
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const validation = validateAll();
+    setErrors(validation);
+    setTouched({ name: true, email: true, phone: true, message: true });
+
+    if (Object.keys(validation).length > 0) {
+      setGlobalError("Please correct the highlighted fields.");
       return;
     }
 
-    setContactName("");
-    setContactPhone("");
-    setContactEmail("");
-    setContactService("External Asbestos Removal");
-    setContactDesc("");
-<<<<<<< HEAD
+    setGlobalError(null);
 
-    alert("Inquiry sent successfully!");
-  } catch (err) {
-    console.error("NETWORK ERROR:", err);
-    alert("Network error (check console).");
-=======
-  } catch (err) {
-    console.error("NETWORK ERROR:", err);
->>>>>>> 1d289ab (initial commit)
-  }
-};
+    try {
+      const res = await fetch("/api/landing-page-form", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: contactName.trim(),
+          // você exibe +61 no UI; aqui mandamos com +61 já pronto:
+          phone_number: `+61${contactPhone.replace(/\D/g, "")}`,
+          email_address: contactEmail.trim().toLowerCase(),
+          service_type: contactService,
+          description: contactDesc.trim(),
+        }),
+      });
 
+      const text = await res.text();
+      let payload: any = null;
+      try {
+        payload = JSON.parse(text);
+      } catch {}
 
-  useEffect(() => {
-    const video = safetyVideoRef.current;
-    if (!video) return;
-
-    const handleLoadedMetadata = () => {
-      video.currentTime = SAFETY_VIDEO_THUMB_TIME;
-      video.pause();
-    };
-
-    const handlePlay = () => setIsSafetyVideoPlaying(true);
-    const handlePause = () => {
-      setIsSafetyVideoPlaying(false);
-      if (!video.ended) {
-        video.currentTime = SAFETY_VIDEO_THUMB_TIME;
+      if (!res.ok) {
+        setGlobalError(payload?.error || "Failed to send. Please try again.");
+        return;
       }
-    };
-    const handleEnded = () => {
-      setIsSafetyVideoPlaying(false);
-      video.currentTime = SAFETY_VIDEO_THUMB_TIME;
-      video.pause();
-    };
 
-    video.muted = true;
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("ended", handleEnded);
-
-    return () => {
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-      video.removeEventListener("ended", handleEnded);
-    };
-  }, []);
+      // reset
+      setContactName("");
+      setContactPhone("");
+      setContactEmail("");
+      setContactService("External Asbestos Removal");
+      setContactDesc("");
+      setErrors({});
+      setTouched({});
+      setGlobalError(null);
+    } catch (err) {
+      setGlobalError("Network error. Please try again.");
+      console.error("NETWORK ERROR:", err);
+    }
+  };
 
   useEffect(() => {
     const items = Array.from(
@@ -237,22 +203,6 @@ const handleContactSubmit = async (e: React.FormEvent) => {
     };
   }, []);
 
-  const handleSafetyVideoEnter = async () => {
-    const video = safetyVideoRef.current;
-    if (!video) return;
-
-    if (!video.paused) return;
-
-    video.muted = true;
-    video.currentTime = 0;
-
-    try {
-      await video.play();
-    } catch {
-      // autoplay might be blocked
-    }
-  };
-
   return (
     <div className="min-h-screen">
       <CookieConsent />
@@ -279,6 +229,7 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                 the public, and our technicians.
               </p>
             </div>
+
             <div
               data-reveal
               className="reveal-item flex flex-col items-center text-center p-4"
@@ -294,6 +245,7 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                 SafeWork NSW for high-risk remediation.
               </p>
             </div>
+
             <div
               data-reveal
               className="reveal-item flex flex-col items-center text-center p-4 sm:col-span-2 md:col-span-1"
@@ -312,7 +264,11 @@ const handleContactSubmit = async (e: React.FormEvent) => {
           </div>
         </section>
 
-        <ServicesSection onSelectService={setSelectedService} />
+        <ServicesSection
+          onSelectService={(svc) => {
+            setContactService(svc);
+          }}
+        />
 
         {/* Corporate Profile Section */}
         <section
@@ -382,7 +338,6 @@ const handleContactSubmit = async (e: React.FormEvent) => {
               data-reveal
               className="reveal-item relative hidden lg:block"
               style={{ width: "960px", height: "540px" }}
-              onMouseEnter={handleSafetyVideoEnter}
             >
               <div
                 className="rounded-lg shadow-2xl h-full w-full overflow-hidden cursor-pointer bg-black/80 flex items-center justify-center"
@@ -408,7 +363,7 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                         height: "100%",
                         cursor: "pointer",
                       }}
-                      aria-label="Carregar vídeo Vimeo"
+                      aria-label="Load Vimeo video"
                     >
                       <svg
                         width="80"
@@ -441,32 +396,12 @@ const handleContactSubmit = async (e: React.FormEvent) => {
               </div>
 
               <div
-                className={`absolute bg-aes-cyan p-6 md:p-7 rounded shadow-2xl transition-all duration-500
-                  ${
-                    isSafetyVideoPlaying
-                      ? "top-4 -left-10 translate-y-0"
-                      : "top-1/2 -left-10 -translate-y-1/2"
-                  }
-                `}
-                style={
-                  isSafetyVideoPlaying
-                    ? {
-                        top: "1rem",
-                        left: "-2.5rem",
-                        transform: "none",
-                        width: "90%",
-                        maxWidth: "270px",
-                        opacity: 1,
-                      }
-                    : {
-                        top: "50%",
-                        left: "-2.5rem",
-                        transform: "translateY(-50%)",
-                        width: "90%",
-                        maxWidth: "270px",
-                        opacity: 1,
-                      }
-                }
+                className="absolute bg-aes-cyan p-6 md:p-7 rounded shadow-2xl transition-all duration-500 top-1/2 -left-10 -translate-y-1/2"
+                style={{
+                  width: "90%",
+                  maxWidth: "270px",
+                  opacity: 1,
+                }}
               >
                 <p className="text-5xl font-black mb-2 text-white">100%</p>
                 <p className="font-black text-white tracking-widest uppercase text-xs text-aes-navy">
@@ -587,107 +522,137 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                   your property needs.
                 </p>
 
+                {globalError && (
+                  <div className="mb-6 rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {globalError}
+                  </div>
+                )}
+
                 <form className="space-y-6" onSubmit={handleContactSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Name */}
                     <div>
                       <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                         Full Name
                       </label>
+
                       <input
                         type="text"
-<<<<<<< HEAD
-                        className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
+                        className={`w-full bg-slate-50 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border ${
+                          errors.name && touched.name
+                            ? "border-red-500 placeholder-red-500 text-red-500"
+                            : "border-slate-200"
+                        }`}
                         value={contactName}
-                        onChange={(e) => setContactName(e.target.value)}
-                        required
+                        onChange={(e) => {
+                          setContactName(e.target.value);
+                          if (touched.name) {
+                            const v = validateAll();
+                            setErrors((prev) => ({ ...prev, name: v.name }));
+                          }
+                        }}
+                        onBlur={() => handleBlur("name")}
+                        placeholder={
+                          errors.name && touched.name ? "Invalid name" : "Full Name"
+                        }
                       />
-=======
-                        className={`w-full bg-slate-50 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border ${errors.name && touched.name ? 'border-red-500 placeholder-red-500' : 'border-slate-200'}`}
-                        value={contactName}
-                        onChange={e => { setContactName(e.target.value); if (touched.name) setErrors(prev => ({ ...prev, name: validateAll().name })); }}
-                        onBlur={() => handleBlur('name')}
-                        placeholder={errors.name && touched.name ? 'Invalid name' : 'Full Name'}
-                        style={errors.name && touched.name ? { color: '#ef4444' } : {}}
-                        required
-                      />
+
                       {errors.name && touched.name && (
-                        <div className="text-red-500 text-xs mt-1">{errors.name}</div>
+                        <div className="text-red-500 text-xs mt-1">
+                          {errors.name}
+                        </div>
                       )}
->>>>>>> 1d289ab (initial commit)
                     </div>
 
+                    {/* Phone */}
                     <div>
                       <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
-<<<<<<< HEAD
                         Phone Number
                       </label>
-                      <input
-                        type="tel"
-                        className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
-                        value={contactPhone}
-                        onChange={(e) => setContactPhone(e.target.value)}
-                      />
-=======
-                        Phone Number <span className="text-xs text-aes-cyan font-semibold ml-2"></span>
-                      </label>
+
                       <div className="flex">
-                        <span className="flex items-center px-3 bg-slate-100 border border-slate-200 rounded-l text-slate-500 text-sm select-none">+61</span>
+                        <span className="flex items-center px-3 bg-slate-100 border border-slate-200 rounded-l text-slate-500 text-sm select-none">
+                          +61
+                        </span>
+
                         <input
                           type="tel"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          maxLength={10}
-                          className={`w-full bg-slate-50 rounded-r px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border-l-0 ${errors.phone && touched.phone ? 'border-red-500 placeholder-red-500' : 'border-slate-200'}`}
+                          maxLength={9}
+                          className={`w-full bg-slate-50 rounded-r px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border border-l-0 ${
+                            errors.phone && touched.phone
+                              ? "border-red-500 placeholder-red-500 text-red-500"
+                              : "border-slate-200"
+                          }`}
                           value={contactPhone}
-                          onChange={e => {
-                            // Permitir apenas números e limitar a 10 dígitos
-                            const onlyNums = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          onChange={(e) => {
+                            const onlyNums = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 9);
                             setContactPhone(onlyNums);
-                            if (touched.phone) setErrors(prev => ({ ...prev, phone: validateAll().phone }));
+                            if (touched.phone) {
+                              const v = validateAll();
+                              setErrors((prev) => ({ ...prev, phone: v.phone }));
+                            }
                           }}
-                          onBlur={() => handleBlur('phone')}
-                          placeholder={errors.phone && touched.phone ? 'Invalid phone' : '4xxxxxxxx'}
-                          style={errors.phone && touched.phone ? { color: '#ef4444' } : {}}
+                          onBlur={() => handleBlur("phone")}
+                          placeholder={
+                            errors.phone && touched.phone ? "Invalid phone" : "4xxxxxxxx"
+                          }
                         />
                       </div>
+
                       {errors.phone && touched.phone && (
-                        <div className="text-red-500 text-xs mt-1">{errors.phone}</div>
+                        <div className="text-red-500 text-xs mt-1">
+                          {errors.phone}
+                        </div>
                       )}
->>>>>>> 1d289ab (initial commit)
                     </div>
                   </div>
 
+                  {/* Email */}
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                       Email Address
                     </label>
+
                     <input
                       type="email"
-<<<<<<< HEAD
-                      className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all"
+                      className={`w-full bg-slate-50 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border ${
+                        errors.email && touched.email
+                          ? "border-red-500 placeholder-red-500 text-red-500"
+                          : "border-slate-200"
+                      }`}
                       value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      required
+                      onChange={(e) => {
+                        setContactEmail(e.target.value);
+                        if (touched.email) {
+                          const v = validateAll();
+                          setErrors((prev) => ({ ...prev, email: v.email }));
+                        }
+                      }}
+                      onBlur={() => handleBlur("email")}
+                      placeholder={
+                        errors.email && touched.email
+                          ? "Invalid email"
+                          : "Email Address"
+                      }
                     />
-=======
-                      className={`w-full bg-slate-50 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all border ${errors.email && touched.email ? 'border-red-500 placeholder-red-500' : 'border-slate-200'}`}
-                      value={contactEmail}
-                      onChange={e => { setContactEmail(e.target.value); if (touched.email) setErrors(prev => ({ ...prev, email: validateAll().email })); }}
-                      onBlur={() => handleBlur('email')}
-                      placeholder={errors.email && touched.email ? 'Invalid email' : 'Email Address'}
-                      style={errors.email && touched.email ? { color: '#ef4444' } : {}}
-                      required
-                    />
+
                     {errors.email && touched.email && (
-                      <div className="text-red-500 text-xs mt-1">{errors.email}</div>
+                      <div className="text-red-500 text-xs mt-1">
+                        {errors.email}
+                      </div>
                     )}
->>>>>>> 1d289ab (initial commit)
                   </div>
 
+                  {/* Service */}
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                       Service Type
                     </label>
+
                     <div className="relative">
                       <select
                         className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all appearance-none"
@@ -718,30 +683,43 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                     </div>
                   </div>
 
+                  {/* Description */}
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">
                       Description
                     </label>
+
                     <textarea
                       rows={4}
-<<<<<<< HEAD
-                      className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all resize-none"
-                      placeholder="Tell us what you need..."
+                      className={`w-full bg-slate-50 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all resize-none border ${
+                        errors.message && touched.message
+                          ? "border-red-500 placeholder-red-500 text-red-500"
+                          : "border-slate-200"
+                      }`}
+                      placeholder={
+                        errors.message && touched.message
+                          ? "Message too short"
+                          : "Tell us what you need..."
+                      }
                       value={contactDesc}
-                      onChange={(e) => setContactDesc(e.target.value)}
+                      onChange={(e) => {
+                        setContactDesc(e.target.value);
+                        if (touched.message) {
+                          const v = validateAll();
+                          setErrors((prev) => ({
+                            ...prev,
+                            message: v.message,
+                          }));
+                        }
+                      }}
+                      onBlur={() => handleBlur("message")}
                     />
-=======
-                      className={`w-full bg-slate-50 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all resize-none border ${errors.message && touched.message ? 'border-red-500 placeholder-red-500' : 'border-slate-200'}`}
-                      placeholder={errors.message && touched.message ? 'Message too short' : 'Tell us what you need...'}
-                      style={errors.message && touched.message ? { color: '#ef4444' } : {}}
-                      value={contactDesc}
-                      onChange={e => { setContactDesc(e.target.value); if (touched.message) setErrors(prev => ({ ...prev, message: validateAll().message })); }}
-                      onBlur={() => handleBlur('message')}
-                    />
+
                     {errors.message && touched.message && (
-                      <div className="text-red-500 text-xs mt-1">{errors.message}</div>
+                      <div className="text-red-500 text-xs mt-1">
+                        {errors.message}
+                      </div>
                     )}
->>>>>>> 1d289ab (initial commit)
                   </div>
 
                   <div className="flex justify-center">
@@ -755,6 +733,7 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                 </form>
               </div>
 
+              {/* Sidebar */}
               <div
                 data-reveal
                 className="reveal-item lg:w-[400px] bg-aes-navy p-8 md:p-12 lg:p-20 flex flex-col justify-center text-white"
@@ -769,11 +748,7 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                     rel="noreferrer"
                     className="text-2xl md:text-3xl font-black hover:text-aes-cyan transition-colors block"
                   >
-<<<<<<< HEAD
                     1300 237 287
-=======
-                    0425 257 142
->>>>>>> 1d289ab (initial commit)
                   </a>
                 </div>
 
@@ -782,28 +757,12 @@ const handleContactSubmit = async (e: React.FormEvent) => {
                     Email Us
                   </p>
                   <a
-<<<<<<< HEAD
-                    href="mailto:info@aesaus.com.au"
-=======
                     href="mailto:business.support@aesaus.com.au"
->>>>>>> 1d289ab (initial commit)
                     target="_blank"
                     rel="noreferrer"
                     className="text-base md:text-lg font-bold hover:text-aes-cyan transition-colors break-words"
                   >
-<<<<<<< HEAD
-                    info@aesaus.com.au
-                  </a>
-                  <a
-                    href="mailto:ghsilva2895@gmail.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-base md:text-lg font-bold hover:text-aes-cyan transition-colors break-words mt-2 block"
-                  >
-                    ghsilva2895@gmail.com
-=======
                     business.support@aesaus.com.au
->>>>>>> 1d289ab (initial commit)
                   </a>
                 </div>
 
