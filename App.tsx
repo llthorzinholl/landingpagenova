@@ -73,39 +73,45 @@ const App: React.FC = () => {
   const [contactDesc, setContactDesc] = useState("");
 
   // ✅ Submit handler (FORA do JSX)
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleContactSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    try {
-      const res = await fetch("/api/landing-page-form", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: contactName,
-          phone_number: contactPhone,
-          email_address: contactEmail, // ✅ nome correto
-          service_type: contactService,
-          description: contactDesc,
-        }),
-      });
+  try {
+    const res = await fetch("/api/landing-page-form", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        full_name: contactName,
+        phone_number: contactPhone,
+        email_address: contactEmail,
+        service_type: contactService,
+        description: contactDesc,
+      }),
+    });
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "Failed to send inquiry");
-      }
+    const text = await res.text(); // pega resposta mesmo se não for JSON
+    let payload: any = null;
+    try { payload = JSON.parse(text); } catch {}
 
-      setContactName("");
-      setContactPhone("");
-      setContactEmail("");
-      setContactService("External Asbestos Removal");
-      setContactDesc("");
-
-      alert("Inquiry sent successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Error sending inquiry.");
+    if (!res.ok) {
+      console.error("API ERROR:", res.status, payload ?? text);
+      alert(`Error ${res.status}: ${payload?.error ?? text ?? "Unknown error"}`);
+      return;
     }
-  };
+
+    setContactName("");
+    setContactPhone("");
+    setContactEmail("");
+    setContactService("External Asbestos Removal");
+    setContactDesc("");
+
+    alert("Inquiry sent successfully!");
+  } catch (err) {
+    console.error("NETWORK ERROR:", err);
+    alert("Network error (check console).");
+  }
+};
+
 
   useEffect(() => {
     const video = safetyVideoRef.current;
