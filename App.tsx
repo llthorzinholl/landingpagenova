@@ -716,12 +716,13 @@ const App: React.FC = () => {
                     Contact Details
                   </p>
                   <a
-                    href="tel:1300237287"
+                    href="tel:0425257142"
                     target="_blank"
                     rel="noreferrer"
                     className="text-2xl md:text-3xl font-black hover:text-aes-cyan transition-colors block"
                   >
-                    1300 237 287
+                    Andrew Konarev
+                    0425 257 142
                   </a>
                 </div>
 

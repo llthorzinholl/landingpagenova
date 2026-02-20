@@ -54,70 +54,59 @@ const Header: React.FC = () => {
         ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${isScrolled || isMobileMenuOpen ? "bg-white shadow-md py-2" : "bg-transparent py-4"}`}
       >
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-9 h-9 sm:w-12 sm:h-12 md:w-16 md:h-16 flex items-center justify-center overflow-hidden">
+        <div className="max-w-screen-xl mx-auto px-2 sm:px-4 md:px-8 flex justify-between items-center min-w-0">
+          <div className="flex items-center gap-2 xs:gap-2.5 md:gap-3 min-w-0">
+            <div className="w-8 h-8 xs:w-6 xs:h-6 sm:w-9 sm:h-9 md:w-12 md:h-12 flex items-center justify-center overflow-hidden flex-shrink-0">
               <img
                 src={logo}
                 alt="Absolute Environmental Services logo"
                 className="w-full h-full object-cover object-left"
               />
-            </div>
-            <div className="flex flex-col">
+             </div>
+             <div className="flex flex-col min-w-0 ">
               <span
-                className={`font-extrabold text-lg md:text-xl leading-none tracking-tight ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"}`}
+                className={`font-extrabold text-base xs:text-lg md:text-xl leading-none tracking-tight break-words ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"}`}
               >
                 ABSOLUTE
               </span>
               <span
-                className={`font-bold text-[8px] md:text-[10px] tracking-[0.2em] ${isScrolled || isMobileMenuOpen ? "text-aes-cyan" : "text-aes-cyan"}`}
+                className={`font-bold text-[8px] md:text-[10px] tracking-[0.2em] break-words ${isScrolled || isMobileMenuOpen ? "text-aes-cyan" : "text-aes-cyan"}`}
               >
                 ENVIRONMENTAL SERVICES
               </span>
             </div>
           </div>
 
-          <nav className="hidden lg:flex items-center gap-8 font-semibold text-xs uppercase tracking-wider">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-8 font-semibold text-xs uppercase tracking-wider min-w-0">
             {navItems.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
                 onClick={(event) => handleNavClick(event, item.href)}
-                className={`hover:text-aes-cyan transition-colors ${isScrolled ? "text-slate-700" : "text-white"}`}
+                className={`hover:text-aes-cyan transition-colors break-words ${isScrolled ? "text-slate-700" : "text-white"}`}
               >
                 {item.name}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-            <a
-              href="tel:1300237287"
-              target="_blank"
-              rel="noreferrer"
-              className={`hidden sm:block font-bold transition-transform text-sm md:text-base ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"} hover:scale-105 duration-200`}
-              style={{ transition: 'transform 0.2s' }}
-            >
-              0425 257 142
-            </a>
-            <div className="relative hidden sm:block">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <div className="relative hidden sm:block w-full sm:w-auto">
               <button
                 type="button"
-                className="bg-aes-cyan hover:bg-aes-navy text-white px-4 md:px-6 py-2 md:py-2.5 rounded font-bold transition-transform shadow-lg hover:shadow-aes-cyan/20 uppercase text-[10px] md:text-xs tracking-widest hover:scale-105 duration-200"
+                className="w-full sm:w-auto border border-white/15 hover:bg-[#00aeef] hover:text-white text-white/70 px-4 sm:px-6 py-2 md:py-2.5 rounded-full font-black transition-transform shadow-lg hover:shadow-aes-cyan/20 uppercase text-[10px] md:text-xs tracking-widest hover:scale-105 duration-200 text-center"
                 style={{ transition: 'transform 0.2s' }}
                 onClick={() => {
                   if (window.innerWidth < 1024) {
-                    window.location.href = 'tel:1300237287';
+                    window.location.href = 'tel:0425257142';
                   } else {
-                    window.location.href = 'mailto:info@absoluteenvironmental.com.au';
+                    window.location.href = 'tel:0425257142';
                   }
                 }}
               >
-                <span>Enquire Now</span>
+                <span className="text-xl">0425 257 142</span>
               </button>
             </div>
-
-            {/* Mobile Menu Toggle */}
             <button
               className={`lg:hidden p-2 rounded focus:outline-none transition-colors ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"}`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -152,7 +141,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-[55] bg-white lg:hidden flex flex-col pt-24 px-6 origin-top transition-all duration-300 ease-out ${
+        className={`fixed inset-0 z-[55] bg-white lg:hidden flex flex-col pt-24 px-2 sm:px-4 origin-top transition-all duration-300 ease-out ${
           isMobileMenuOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
@@ -160,21 +149,21 @@ const Header: React.FC = () => {
         style={{ transform: isMobileMenuOpen ? "scaleY(1)" : "scaleY(0)" }}
         aria-hidden={!isMobileMenuOpen}
       >
-        <div className="flex flex-col gap-6 text-center">
+        <div className="flex flex-col gap-4 sm:gap-6 text-center min-w-0">
           {navItems.map((item) => (
             <a
               key={item.name}
               href={item.href}
               onClick={(event) => handleNavClick(event, item.href)}
-              className="text-xl font-bold text-aes-navy uppercase tracking-widest hover:text-aes-cyan transition-colors"
+              className="text-lg sm:text-xl font-bold text-aes-navy uppercase tracking-widest hover:text-aes-cyan transition-colors break-words"
             >
               {item.name}
             </a>
           ))}
-          <div className="mt-8 flex flex-col gap-4 relative items-center">
+          <div className="mt-6 sm:mt-8 flex flex-col gap-3 sm:gap-4 relative items-center w-full">
             <button
               type="button"
-              className="bg-aes-cyan text-white rounded font-bold uppercase tracking-widest shadow-xl transition-all duration-300 py-6 px-8 text-[10px]"
+              className="w-full bg-aes-cyan text-white rounded font-bold uppercase tracking-widest shadow-xl transition-all duration-300 py-4 sm:py-6 px-4 sm:px-8 text-[10px] text-center"
               onClick={() => {
                 if (window.innerWidth < 1024) {
                   window.location.href = 'tel:1300237287';
