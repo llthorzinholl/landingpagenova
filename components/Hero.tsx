@@ -672,27 +672,19 @@ const Hero: React.FC = () => {
                   }`}
                 >
                   <div className="flex flex-wrap gap-3 sm:gap-4 justify-start">
-                    <button
+                    <a
+                      href="#contact"
                       className="w-full sm:w-auto bg-[#00aeef]/15 backdrop-blur-sm border border-white/20 hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef] text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-bold text-xs md:text-sm transition-all shadow-xl uppercase tracking-widest transform hover:-translate-y-1"
-                      onClick={() => {
-                        const target = document.getElementById("contact");
-                        target?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                      type="button"
                     >
                       Book an inspection
-                    </button>
+                    </a>
 
-                    <button
+                    <a
+                      href="#services"
                       className="w-full sm:w-auto bg-transparent border-2 border-white/30 hover:border-aes-cyan hover:text-aes-cyan text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-bold text-xs md:text-sm transition-all transform hover:-translate-y-1 uppercase tracking-widest"
-                      onClick={() => {
-                        const target = document.getElementById("services");
-                        target?.scrollIntoView({ behavior: "smooth", block: "start" });
-                      }}
-                      type="button"
                     >
                       Our Services
-                    </button>
+                    </a>
                   </div>
                 </div>
 
