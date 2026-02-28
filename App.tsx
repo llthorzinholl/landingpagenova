@@ -177,7 +177,7 @@ const App: React.FC = () => {
         <Hero />
 
         {/* Core Values Row */}
-        <section className="bg-slate-50 py-12 md:py-20 border-b border-slate-200" aria-labelledby="core-values-heading">
+        <section id="core-values" className="bg-slate-50 py-12 md:py-20 border-b border-slate-200" aria-labelledby="core-values-heading">
           <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
             <div
               data-reveal
@@ -727,7 +727,7 @@ const App: React.FC = () => {
                   <a
                     href="tel:0425257142"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="text-2xl md:text-3xl font-black hover:text-aes-cyan transition-colors block"
                   >
                     Andrew Konarev 0425 257 142
@@ -741,7 +741,7 @@ const App: React.FC = () => {
                   <a
                     href="mailto:business.support@aesaus.com.au"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="text-base md:text-lg font-bold hover:text-aes-cyan transition-colors break-words"
                   >
                     business.support@aesaus.com.au
@@ -794,7 +794,7 @@ const App: React.FC = () => {
             <a
               href="https://aesaus.com.au/privacy-policy/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="hover:text-aes-cyan transition-colors"
             >
               Privacy Policy
@@ -802,7 +802,7 @@ const App: React.FC = () => {
             <a
               href="https://aesaus.com.au/terms-conditions/"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="hover:text-aes-cyan transition-colors"
             >
               Terms and Condition

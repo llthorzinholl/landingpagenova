@@ -1,5 +1,22 @@
 {
   "headers": [
+      ],
+      "redirects": [
+        {
+          "source": "http://aeslanding.com/:path*",
+          "destination": "https://aeslanding.com/:path*",
+          "permanent": true
+        },
+        {
+          "source": "http://www.aeslanding.com/:path*",
+          "destination": "https://aeslanding.com/:path*",
+          "permanent": true
+        },
+        {
+          "source": "https://www.aeslanding.com/:path*",
+          "destination": "https://aeslanding.com/:path*",
+          "permanent": true
+        }
     {
       "source": "/(.*)",
       "headers": [

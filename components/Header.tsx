@@ -82,7 +82,6 @@ const Header: React.FC = () => {
               <a
                 key={item.name}
                 href={item.href}
-                onClick={(event) => handleNavClick(event, item.href)}
                 className={`hover:text-aes-cyan transition-colors break-words ${isScrolled ? "text-slate-700" : "text-white"}`}
               >
                 {item.name}
