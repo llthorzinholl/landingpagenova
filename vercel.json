@@ -3,18 +3,18 @@
       ],
       "redirects": [
         {
-          "source": "http://aeslanding.com/:path*",
-          "destination": "https://aeslanding.com/:path*",
+          "source": "https://australiasafe.com.au/:path*",
+          "destination": "https://australiasafe.com.au/:path*",
           "permanent": true
         },
         {
           "source": "http://www.aeslanding.com/:path*",
-          "destination": "https://aeslanding.com/:path*",
+          "destination": "https://australiasafe.com.au/:path*",
           "permanent": true
         },
         {
-          "source": "https://www.aeslanding.com/:path*",
-          "destination": "https://aeslanding.com/:path*",
+          "source": "https://australiasafe.com.au/:path*",
+          "destination": "https://australiasafe.com.au/:path*",
           "permanent": true
         }
     {
