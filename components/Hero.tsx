@@ -676,7 +676,7 @@ const Hero: React.FC = () => {
                       href="#contact"
                       className="w-full sm:w-auto bg-[#00aeef]/15 backdrop-blur-sm border border-white/20 hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef] text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-bold text-xs md:text-sm transition-all shadow-xl uppercase tracking-widest transform hover:-translate-y-1"
                     >
-                      Book an inspection
+                      Book an inspectio
                     </a>
 
                     <a
