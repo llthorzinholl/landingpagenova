@@ -524,6 +524,7 @@ const Hero: React.FC = () => {
         ref={heroSectionRef}
         className="relative w-full overflow-hidden bg-aes-navy"
         style={{ height: "min(100svh, clamp(680px, 56.25vw, 1080px))" }}
+        aria-labelledby="hero-heading"
       >
         {/* Background */}
         <div className="absolute inset-0 z-0 overflow-hidden">
@@ -618,12 +619,12 @@ const Hero: React.FC = () => {
             <div className="h-full w-full max-w-[56rem] min-w-0 text-left flex flex-col justify-center">
               <div className="flex flex-col gap-5 sm:gap-6 lg:gap-8 pt-6 sm:pt-8 md:pt-14 pb-10 sm:pb-12 mt-[4rem] sm:mt-[5rem] md:mt-[6rem]">
                 {!isAudioActive && (
-                  <div className="hidden sm:flex items-center justify-start gap-3 mb-[-1.20rem]">
+                  <h3 className="hidden sm:flex items-center justify-start gap-3 mb-[-1.20rem]">
                     <div className="h-px w-10 bg-aes-cyan" />
                     <span className="text-aes-cyan font-bold tracking-[0.25em] uppercase text-[clamp(0.55rem,0.8vw,0.75rem)]">
                       Hazardous Material Management Specialists
                     </span>
-                  </div>
+                  </h3>
                 )}
 
                 {!isAudioActive && (
@@ -641,7 +642,7 @@ const Hero: React.FC = () => {
                       </a>
                     </div>
 
-                    <h1 className="font-black tracking-tight leading-[0.95] text-white break-words">
+                    <h1 id="hero-heading" className="font-black tracking-tight leading-[0.95] text-white break-words">
                       <span className="block text-[clamp(2.4rem,4.3vw,5.6rem)]">24+ Years</span>
                       <span className="block text-[clamp(2.4rem,4.3vw,5.6rem)]">Of Experience</span>
                       <span className="block text-aes-cyan text-[clamp(2.2rem,3.9vw,5.2rem)]">
@@ -661,8 +662,7 @@ const Hero: React.FC = () => {
                   }`}
                 >
                   <p className="text-slate-100 font-light leading-relaxed max-w-[42rem] text-[clamp(1rem,1.2vw,1rem)] mt-[-1rem] mb-[-1rem]">
-                    Providing safe, effective and efficient removal of asbestos and other <br />
-                    hazardous materials for residential and commercial properties.
+                    Providing safe, effective and efficient removal of asbestos and other hazardous materials for residential and commercial properties in Sydney and New South Wales.
                   </p>
                 </div>
 

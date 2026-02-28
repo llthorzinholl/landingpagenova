@@ -62,8 +62,8 @@ const Header: React.FC = () => {
                 alt="Absolute Environmental Services logo"
                 className="w-full h-full object-cover object-left"
               />
-             </div>
-             <div className="flex flex-col min-w-0 ">
+            </div>
+            <div className="flex flex-col min-w-0 ">
               <span
                 className={`font-extrabold text-base xs:text-lg md:text-xl leading-none tracking-tight break-words ${isScrolled || isMobileMenuOpen ? "text-aes-navy" : "text-white"}`}
               >
@@ -95,12 +95,12 @@ const Header: React.FC = () => {
               <button
                 type="button"
                 className="w-full sm:w-auto border border-white/15 hover:bg-[#00aeef] hover:text-white text-white/70 px-4 sm:px-6 py-2 md:py-2.5 rounded-full font-black transition-transform shadow-lg hover:shadow-aes-cyan/20 uppercase text-[10px] md:text-xs tracking-widest hover:scale-105 duration-200 text-center"
-                style={{ transition: 'transform 0.2s' }}
+                style={{ transition: "transform 0.2s" }}
                 onClick={() => {
                   if (window.innerWidth < 1024) {
-                    window.location.href = 'tel:0425257142';
+                    window.location.href = "tel:0425257142";
                   } else {
-                    window.location.href = 'tel:0425257142';
+                    window.location.href = "tel:0425257142";
                   }
                 }}
               >
@@ -166,9 +166,10 @@ const Header: React.FC = () => {
               className="w-full bg-aes-cyan text-white rounded font-bold uppercase tracking-widest shadow-xl transition-all duration-300 py-4 sm:py-6 px-4 sm:px-8 text-[10px] text-center"
               onClick={() => {
                 if (window.innerWidth < 1024) {
-                  window.location.href = 'tel:1300237287';
+                  window.location.href = "tel:1300237287";
                 } else {
-                  window.location.href = 'mailto:info@absoluteenvironmental.com.au';
+                  window.location.href =
+                    "mailto:info@absoluteenvironmental.com.au";
                 }
               }}
             >

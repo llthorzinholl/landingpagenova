@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import logo from "./assets/novasImgs/logo.webp";
 import Header from "./components/Header";
@@ -17,7 +16,7 @@ const aboutPortfolioEntries = Object.entries(
     eager: true,
     query: "?url",
     import: "default",
-  })
+  }),
 ) as Array<[string, string]>;
 const aboutPortfolioItems = aboutPortfolioEntries
   .sort(([a], [b]) => a.localeCompare(b))
@@ -33,20 +32,16 @@ const aboutPortfolioItems = aboutPortfolioEntries
         : "Result after safe removal and cleanup.",
     };
   });
-const aboutPortfolioPairs = aboutPortfolioItems.reduce(
-  (acc, item, index) => {
-    if (index % 2 === 0) {
-      acc.push({ pairNumber: Math.floor(index / 2) + 1, before: item });
-    } else {
-      acc[acc.length - 1].after = item;
-    }
-    return acc;
-  },
-  []
-);
+const aboutPortfolioPairs = aboutPortfolioItems.reduce((acc, item, index) => {
+  if (index % 2 === 0) {
+    acc.push({ pairNumber: Math.floor(index / 2) + 1, before: item });
+  } else {
+    acc[acc.length - 1].after = item;
+  }
+  return acc;
+}, []);
 
 const App: React.FC = () => {
-
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [vimeoLoaded, setVimeoLoaded] = useState(false);
@@ -54,7 +49,9 @@ const App: React.FC = () => {
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [contactService, setContactService] = useState("External Asbestos Removal");
+  const [contactService, setContactService] = useState(
+    "External Asbestos Removal",
+  );
   const [contactDesc, setContactDesc] = useState("");
   const [errors, setErrors] = useState<{
     name?: string;
@@ -75,7 +72,9 @@ const App: React.FC = () => {
       newErrors.name = "Invalid name";
     }
     const email = contactEmail.trim();
-    const emailOk = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(email);
+    const emailOk = /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(
+      email,
+    );
     if (!emailOk) {
       newErrors.email = "Invalid email";
     }
@@ -145,7 +144,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const items = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-reveal]")
+      document.querySelectorAll<HTMLElement>("[data-reveal]"),
     );
     if (!("IntersectionObserver" in window)) {
       items.forEach((item) => item.classList.add("is-visible"));
@@ -160,7 +159,7 @@ const App: React.FC = () => {
           }
         });
       },
-      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
+      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" },
     );
     items.forEach((item) => observer.observe(item));
     return () => {
@@ -173,22 +172,23 @@ const App: React.FC = () => {
       <CookieConsent />
       <Header />
 
-      <main>
+      <main role="main">
+        {/* Hero section already contains the <h1> for SEO */}
         <Hero />
 
         {/* Core Values Row */}
-        <section className="bg-slate-50 py-12 md:py-20 border-b border-slate-200">
+        <section className="bg-slate-50 py-12 md:py-20 border-b border-slate-200" aria-labelledby="core-values-heading">
           <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-12">
             <div
               data-reveal
               className="reveal-item flex flex-col items-center text-center p-4"
             >
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-aes-navy text-white rounded-full flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 shadow-lg shadow-aes-navy/20">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-aes-navy text-white rounded-full flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 shadow-lg shadow-aes-navy/20" aria-hidden="true">
                 🛡️
               </div>
-              <h4 className="text-lg md:text-xl font-bold text-aes-navy mb-2 md:mb-3">
+              <h2 id="core-values-heading" className="text-lg md:text-xl font-bold text-aes-navy mb-2 md:mb-3">
                 Safety First
-              </h4>
+              </h2>
               <p className="text-slate-600 text-sm leading-relaxed max-w-xs">
                 Our primary objective is the health and safety of our clients,
                 the public, and our technicians.
@@ -199,12 +199,12 @@ const App: React.FC = () => {
               data-reveal
               className="reveal-item flex flex-col items-center text-center p-4"
             >
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-aes-cyan text-white rounded-full flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 shadow-lg shadow-aes-cyan/20">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-aes-cyan text-white rounded-full flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 shadow-lg shadow-aes-cyan/20" aria-hidden="true">
                 📋
               </div>
-              <h4 className="text-lg md:text-xl font-bold text-aes-navy mb-2 md:mb-3">
+              <h2 className="text-lg md:text-xl font-bold text-aes-navy mb-2 md:mb-3">
                 Full Compliance
-              </h4>
+              </h2>
               <p className="text-slate-600 text-sm leading-relaxed max-w-xs">
                 Operating under strict ISO certifications and fully licensed by
                 SafeWork NSW for high-risk remediation.
@@ -215,12 +215,12 @@ const App: React.FC = () => {
               data-reveal
               className="reveal-item flex flex-col items-center text-center p-4 sm:col-span-2 md:col-span-1"
             >
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-aes-navy text-white rounded-full flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 shadow-lg shadow-aes-navy/20">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-aes-navy text-white rounded-full flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 shadow-lg shadow-aes-navy/20" aria-hidden="true">
                 🌍
               </div>
-              <h4 className="text-lg md:text-xl font-bold text-aes-navy mb-2 md:mb-3">
+              <h2 className="text-lg md:text-xl font-bold text-aes-navy mb-2 md:mb-3">
                 Eco Responsible
-              </h4>
+              </h2>
               <p className="text-slate-600 text-sm leading-relaxed max-w-xs">
                 Dedicated to environmentally sustainable waste disposal and
                 reducing remediation footprints.
@@ -518,7 +518,9 @@ const App: React.FC = () => {
                         }}
                         onBlur={() => handleBlur("name")}
                         placeholder={
-                          errors.name && touched.name ? "Invalid name" : "Full Name"
+                          errors.name && touched.name
+                            ? "Invalid name"
+                            : "Full Name"
                         }
                       />
 
@@ -558,16 +560,19 @@ const App: React.FC = () => {
                             setContactPhone(onlyNums);
                             if (touched.phone) {
                               const v = validateAll();
-                              setErrors((prev) => ({ ...prev, phone: v.phone }));
+                              setErrors((prev) => ({
+                                ...prev,
+                                phone: v.phone,
+                              }));
                             }
                           }}
                           onBlur={() => handleBlur("phone")}
                           placeholder={
-                            errors.phone && touched.phone ? "Invalid phone" : "4xxxxxxxxxx"
+                            errors.phone && touched.phone
+                              ? "Invalid phone"
+                              : "4xxxxxxxxxx"
                           }
                         />
-                        
-                       
                       </div>
 
                       {errors.phone && touched.phone && (
@@ -698,9 +703,13 @@ const App: React.FC = () => {
                           ? "mt-10 md:mt-12 bg-green-500 text-white rounded-full w-24 h-12 md:w-28 md:h-14 flex items-center justify-center text-lg font-bold transition-all duration-500 shadow-lg scale-110"
                           : "mt-10 md:mt-12 bg-aes-cyan duration-300 hover:bg-white hover:text-[#00aeef] border hover:border-[#00aeef] text-white px-10 md:px-16 hover:px-14 py-4 rounded font-bold transition-all uppercase text-xs tracking-widest"
                       }
-                      style={submitSuccess ? { minWidth: '96px', minHeight: '48px', padding: 0 } : {}}
+                      style={
+                        submitSuccess
+                          ? { minWidth: "96px", minHeight: "48px", padding: 0 }
+                          : {}
+                      }
                     >
-                      {submitSuccess ? 'Done' : 'Submit Inquiry'}
+                      {submitSuccess ? "Done" : "Submit Inquiry"}
                     </button>
                   </div>
                 </form>
@@ -721,8 +730,7 @@ const App: React.FC = () => {
                     rel="noreferrer"
                     className="text-2xl md:text-3xl font-black hover:text-aes-cyan transition-colors block"
                   >
-                    Andrew Konarev
-                    0425 257 142
+                    Andrew Konarev 0425 257 142
                   </a>
                 </div>
 

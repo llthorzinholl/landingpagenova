@@ -1,4 +1,3 @@
-
 import { neon } from "@neondatabase/serverless";
 // Simple sanitization utility
 function sanitizeInput(input: string): string {
@@ -11,7 +10,7 @@ export default async function handler(req: any, res: any) {
   // Restrict CORS to trusted domains in production
   const allowedOrigins = [
     "https://aeslanding.com", // example production domain
-    "http://localhost:3000"
+    "http://localhost:3000",
   ];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
@@ -41,12 +40,14 @@ export default async function handler(req: any, res: any) {
 
       const sql = neon(process.env.DATABASE_URL!);
 
-      const t = await sql`SELECT to_regclass('public.landing_page_uploads') AS table_name`;
+      const t =
+        await sql`SELECT to_regclass('public.landing_page_uploads') AS table_name`;
       const table = t?.[0]?.table_name ?? null;
 
       let totalRows: number | null = null;
       if (table) {
-        const c = await sql`SELECT COUNT(*)::int AS total FROM landing_page_uploads`;
+        const c =
+          await sql`SELECT COUNT(*)::int AS total FROM landing_page_uploads`;
         totalRows = c?.[0]?.total ?? null;
       }
 
@@ -72,10 +73,12 @@ export default async function handler(req: any, res: any) {
 
     // ✅ Body robusto (pode vir string)
     const body =
-      typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body ?? {});
+      typeof req.body === "string"
+        ? JSON.parse(req.body || "{}")
+        : (req.body ?? {});
 
-
-    let { full_name, phone_number, email_address, service_type, description } = body;
+    let { full_name, phone_number, email_address, service_type, description } =
+      body;
 
     // Sanitize all inputs
     full_name = full_name ? sanitizeInput(full_name) : "";
@@ -96,14 +99,14 @@ export default async function handler(req: any, res: any) {
     const sql = neon(process.env.DATABASE_URL!);
 
     // (Opcional) garante que a tabela existe e retorna erro mais claro
-    const t = await sql`SELECT to_regclass('public.landing_page_uploads') AS table_name`;
+    const t =
+      await sql`SELECT to_regclass('public.landing_page_uploads') AS table_name`;
     if (!t?.[0]?.table_name) {
       return res.status(500).json({
         error:
           "Table landing_page_uploads does not exist in this database/branch. Create it in Neon (same env/branch).",
       });
     }
-
 
     // Use parameterized queries (already safe with neon)
     await sql`
@@ -121,7 +124,7 @@ export default async function handler(req: any, res: any) {
       console.error("FUNCTION ERROR:", err);
     }
     return res.status(500).json({
-      error: "Internal Server Error"
+      error: "Internal Server Error",
     });
   }
 }
