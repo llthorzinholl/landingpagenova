@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import voiceover from "../assets/AES-andrew_aes-JaredBatsonVoiceover_Revision 2.wav";
 
-/* =============================================================================
+/* 
    Captions + Timing (easy to find / tweak)
-============================================================================= */
+ */
 
 const CAPTION_OFFSET_SECONDS = 0.15;
 
@@ -78,9 +78,9 @@ const PHRASES = [
   { time: 85, text: "Absolute Environmental Services: Safe, Certified, Trusted." },
 ];
 
-/* =============================================================================
+/* 
    Background media (images/videos)
-============================================================================= */
+ */
 
 const mediaEntries = Object.entries(
   import.meta.glob("../assets/AES/*.{jpeg,jpg,png,mp4,webp}", {
@@ -97,9 +97,9 @@ const mediaItems = mediaEntries
     isVideo: path.toLowerCase().endsWith(".mp4"),
   }));
 
-/* =============================================================================
+/* 
    UI Components (Caption Controls)
-============================================================================= */
+ */
 
 type CaptionControlsProps = {
   isPlaying: boolean;
@@ -207,9 +207,9 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
   );
 };
 
-/* =============================================================================
+/* 
    Hero
-============================================================================= */
+ */
 
 const Hero: React.FC = () => {
   const heroSectionRef = useRef<HTMLElement | null>(null);
@@ -272,9 +272,9 @@ const Hero: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* =============================================================================
+  /* 
      Audio wiring
-============================================================================= */
+ */
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -326,9 +326,9 @@ const Hero: React.FC = () => {
     };
   }, []);
 
-  /* =============================================================================
+  /* 
      Smooth currentTime via RAF
-============================================================================= */
+ */
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -376,9 +376,9 @@ const Hero: React.FC = () => {
 
   const activePhraseText = PHRASES[phraseIndex]?.text ?? "";
 
-  /* =============================================================================
+  /* 
      Actions
-============================================================================= */
+ */
 
   const resetCaptionTimeline = () => {
     lastPhraseIndexRef.current = 0;
@@ -446,9 +446,9 @@ const Hero: React.FC = () => {
     }
   };
 
-  /* =============================================================================
+  /* 
      Main Hero ControlBar (top area)
-============================================================================= */
+ */
 
   const ControlBar = ({ className = "" }: { className?: string }) => (
     <div className={["relative z-[999] pointer-events-auto", className].join(" ")}>

@@ -38,8 +38,8 @@ const FloatingAssistant: React.FC = () => {
       { role: "assistant", content: response || "No response" },
     ]);
     setIsLoading(false);
-<<<<<<< HEAD
-=======
+
+
 
     // Envio automático para API Node.js
     try {
@@ -55,7 +55,7 @@ const FloatingAssistant: React.FC = () => {
       // Apenas log, não interrompe UX
       console.error("Erro ao salvar mensagem no banco:", err);
     }
->>>>>>> a900954 (feat: integração automática com NeonDB e API Node.js)
+ a900954 (feat: integração automática com NeonDB e API Node.js)
   };
 
   return (
