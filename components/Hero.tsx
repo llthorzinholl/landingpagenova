@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { track } from "@vercel/analytics";
 import voiceover from "../assets/AES-andrew_aes-JaredBatsonVoiceover_Revision 2.wav";
 
 /* 
@@ -96,10 +97,6 @@ const mediaItems = mediaEntries
     src,
     isVideo: path.toLowerCase().endsWith(".mp4"),
   }));
-
-/* 
-   UI Components (Caption Controls)
- */
 
 type CaptionControlsProps = {
   isPlaying: boolean;
@@ -207,19 +204,13 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
   );
 };
 
-/* 
-   Hero
- */
-
 const Hero: React.FC = () => {
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Caption timeline refs
   const lastPhraseIndexRef = useRef(0);
   const smoothedTimeRef = useRef(0);
 
-  // UI state
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -227,10 +218,8 @@ const Hero: React.FC = () => {
   const [volume, setVolume] = useState(1);
   const [hasScrolled, setHasScrolled] = useState(false);
 
-  // RAF smoothing
   const rafIdRef = useRef<number | null>(null);
 
-  // Background slideshow
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [transitionIndex, setTransitionIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -272,10 +261,6 @@ const Hero: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* 
-     Audio wiring
- */
-
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -291,7 +276,7 @@ const Hero: React.FC = () => {
         setIsMuted(false);
         setIsAudioActive(true);
       } catch {
-        // autoplay blocked; user can press Play
+        // autoplay blocked
       }
     }, 500);
 
@@ -302,7 +287,6 @@ const Hero: React.FC = () => {
 
     const handlePause = () => {
       setIsPlaying(false);
-      // keep caption visible
     };
 
     const handleEnded = () => {
@@ -325,10 +309,6 @@ const Hero: React.FC = () => {
       window.clearTimeout(autoplayDelay);
     };
   }, []);
-
-  /* 
-     Smooth currentTime via RAF
- */
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -376,19 +356,22 @@ const Hero: React.FC = () => {
 
   const activePhraseText = PHRASES[phraseIndex]?.text ?? "";
 
-  /* 
-     Actions
- */
-
   const resetCaptionTimeline = () => {
     lastPhraseIndexRef.current = 0;
     smoothedTimeRef.current = 0;
     setSmoothTime(0);
   };
 
-  const togglePlayPause = async () => {
+  const togglePlayPause = async (source: string = "hero_main_play_button") => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    track("audio_play_pause_clicked", {
+      source,
+      page: "home",
+      section: "hero",
+      action: audio.paused ? "play" : "pause",
+    });
 
     setIsAudioActive(true);
 
@@ -417,11 +400,17 @@ const Hero: React.FC = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    track("audio_stop_clicked", {
+      source: "hero_audio_controls",
+      page: "home",
+      section: "hero",
+    });
+
     audio.pause();
     resetCaptionTimeline();
     audio.currentTime = 0;
 
-    setIsAudioActive(false); // only STOP returns hero to normal
+    setIsAudioActive(false);
     setIsPlaying(false);
     setShowVolume(false);
   };
@@ -429,6 +418,14 @@ const Hero: React.FC = () => {
   const toggleMute = () => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    track("audio_mute_clicked", {
+      source: hasScrolled ? "floating_audio_button" : "hero_audio_controls",
+      page: "home",
+      section: "hero",
+      action: audio.muted ? "unmute" : "mute",
+    });
+
     audio.muted = !audio.muted;
     setIsMuted(audio.muted);
   };
@@ -446,15 +443,23 @@ const Hero: React.FC = () => {
     }
   };
 
-  /* 
-     Main Hero ControlBar (top area)
- */
+  const handleBookInspectionClick = () => {
+    track("cta_clicked", {
+      source: "hero_book_inspection_button",
+      cta_name: "book_an_inspection",
+      page: "home",
+      section: "hero",
+    });
+
+    const target = document.getElementById("contact");
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const ControlBar = ({ className = "" }: { className?: string }) => (
     <div className={["relative z-[999] pointer-events-auto", className].join(" ")}>
       <button
         type="button"
-        onClick={togglePlayPause}
+        onClick={() => togglePlayPause("hero_main_play_button")}
         className={[
           "relative z-[999] pointer-events-auto",
           "inline-flex flex-wrap items-center gap-2",
@@ -475,203 +480,190 @@ const Hero: React.FC = () => {
   );
 
   return (
-  <>
-    <section
-      ref={heroSectionRef}
-      className="relative w-full overflow-hidden bg-aes-navy"
-      style={{
-        height: "min(92svh, clamp(560px, 52vw, 980px))",
-      }}
-    >
-      {/* Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative h-full w-full">
-            {mediaItems.length === 0 ? (
-              <div
-                className="absolute inset-0 bg-center bg-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                style={{
-                  backgroundImage:
-                    'url("https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=2000")',
-                }}
-              />
-            ) : (
-              <>
+    <>
+      <section
+        ref={heroSectionRef}
+        className="relative w-full overflow-hidden bg-aes-navy"
+        style={{
+          height: "min(92svh, clamp(560px, 52vw, 980px))",
+        }}
+      >
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative h-full w-full">
+              {mediaItems.length === 0 ? (
                 <div
-                  className={`absolute inset-0 transition-opacity duration-[1200ms] ${
-                    isTransitioning ? "opacity-0" : "opacity-100"
-                  }`}
-                >
-                  {mediaItems[activeMediaIndex]?.isVideo ? (
-                    <video
-                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                      src={mediaItems[activeMediaIndex].src}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    />
-                  ) : (
-                    <img
-                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                      src={mediaItems[activeMediaIndex]?.src}
-                      alt="AES background"
-                    />
-                  )}
-                </div>
+                  className="absolute inset-0 bg-center bg-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                  style={{
+                    backgroundImage:
+                      'url("https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=2000")',
+                  }}
+                />
+              ) : (
+                <>
+                  <div
+                    className={`absolute inset-0 transition-opacity duration-[1200ms] ${
+                      isTransitioning ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    {mediaItems[activeMediaIndex]?.isVideo ? (
+                      <video
+                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                        src={mediaItems[activeMediaIndex].src}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                        src={mediaItems[activeMediaIndex]?.src}
+                        alt="AES background"
+                      />
+                    )}
+                  </div>
 
-                <div
-                  className={`absolute inset-0 transition-opacity duration-[1200ms] ${
-                    isTransitioning ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  {mediaItems[transitionIndex]?.isVideo ? (
-                    <video
-                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                      src={mediaItems[transitionIndex].src}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    />
-                  ) : (
-                    <img
-                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                      src={mediaItems[transitionIndex]?.src}
-                      alt="AES background"
-                    />
-                  )}
-                </div>
-              </>
-            )}
+                  <div
+                    className={`absolute inset-0 transition-opacity duration-[1200ms] ${
+                      isTransitioning ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    {mediaItems[transitionIndex]?.isVideo ? (
+                      <video
+                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                        src={mediaItems[transitionIndex].src}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                        src={mediaItems[transitionIndex]?.src}
+                        alt="AES background"
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
+
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to right, rgba(0,43,73,0.97) 0%, rgba(0,43,73,0.70) 30%, rgba(0,43,73,0.12) 70%, rgba(0,43,73,0.00) 100%)",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,43,73,0.14) 0%, rgba(0,43,73,0.05) 55%, rgba(0,43,73,0.62) 100%)",
+            }}
+          />
         </div>
 
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to right, rgba(0,43,73,0.97) 0%, rgba(0,43,73,0.70) 30%, rgba(0,43,73,0.12) 70%, rgba(0,43,73,0.00) 100%)",
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,43,73,0.14) 0%, rgba(0,43,73,0.05) 55%, rgba(0,43,73,0.62) 100%)",
-          }}
-        />
-      </div>
+        <div className="relative z-10 h-full">
+          <div className="mx-auto h-full w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+            <div className="h-full w-full max-w-[52rem] min-w-0 flex flex-col justify-center">
+              <div className="w-full mx-auto sm:mx-0 text-left">
+                <div
+                  className={[
+                    "flex flex-col",
+                    "gap-4 sm:gap-5 lg:gap-6",
+                    "pt-3 sm:pt-8 md:pt-12",
+                    "pb-16 sm:pb-12",
+                    "mt-[3.25rem] sm:mt-[4.75rem] md:mt-[5.5rem]",
+                  ].join(" ")}
+                >
+                  {!isAudioActive && <div className="hidden sm:flex items-center justify-start gap-3" />}
 
-      {/* Content */}
-      <div className="relative z-10 h-full">
-        <div className="mx-auto h-full w-full max-w-6xl px-4 sm:px-6 lg:px-10">
-          <div className="h-full w-full max-w-[52rem] min-w-0 flex flex-col justify-center">
-            <div className="w-full mx-auto sm:mx-0 text-left">
-              <div
-                className={[
-                  "flex flex-col",
-                  "gap-4 sm:gap-5 lg:gap-6",
-                  "pt-3 sm:pt-8 md:pt-12",
-                  "pb-16 sm:pb-12",
-                  "mt-[3.25rem] sm:mt-[4.75rem] md:mt-[5.5rem]",
-                ].join(" ")}
-              >
-                {!isAudioActive && <div className="hidden sm:flex items-center justify-start gap-3" />}
+                  {!isAudioActive && (
+                    <div className="w-full max-w-[42rem]">
+                      <div className="flex flex-col gap-3 sm:gap-4">
+                        <div
+                          className={[
+                            "w-full",
+                            "rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md",
+                            "px-4 py-2.5",
+                            "shadow-[0_10px_30px_rgba(0,0,0,0.30)]",
+                          ].join(" ")}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-aes-cyan font-black leading-none text-[22px] sm:text-[26px]">
+                                24+
+                              </span>
+                              <span className="text-white/95 font-extrabold tracking-wide text-[11px] sm:text-[12px] uppercase leading-none">
+                                Years
+                              </span>
+                            </div>
 
-                {!isAudioActive && (
-                  // ✅ mesma largura no mobile e desktop (mesmo “formato”)
-                  <div className="w-full max-w-[42rem]">
-                    <div className="flex flex-col gap-3 sm:gap-4">
-                      {/* ROW 1 — Badge */}
-                      <div
-                        className={[
-                          "w-full",
-                          "rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md",
-                          "px-4 py-2.5",
-                          "shadow-[0_10px_30px_rgba(0,0,0,0.30)]",
-                        ].join(" ")}
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* ✅ centraliza verticalmente o "Years" */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-aes-cyan font-black leading-none text-[22px] sm:text-[26px]">
-                              24+
-                            </span>
-                            <span className="text-white/95 font-extrabold tracking-wide text-[11px] sm:text-[12px] uppercase leading-none">
-                              Years
+                            <span className="h-5 w-px bg-white/15" />
+                            <span className="text-white/85 font-medium text-[11px] sm:text-[12px] leading-tight">
+                              Delivering safe & compliant asbestos removal across NSW
                             </span>
                           </div>
+                        </div>
 
-                          <span className="h-5 w-px bg-white/15" />
-                          <span className="text-white/85 font-medium text-[11px] sm:text-[12px] leading-tight">
-                            Delivering safe & compliant asbestos removal across NSW
-                          </span>
+                        <div className="w-full">
+                          <h1 className="font-black tracking-tight text-white break-words">
+                            <span className="block text-white/80 text-[clamp(0.95rem,2.4vw,1.15rem)] leading-tight">
+                              Safe asbestos removal for NSW homes.
+                            </span>
+
+                            <span className="block text-[clamp(1.85rem,4.8vw,4.6rem)] leading-[0.98] mt-1">
+                              Worried About Asbestos?
+                            </span>
+
+                            <span className="block text-aes-cyan text-[clamp(1.35rem,3.8vw,3.6rem)] leading-[1.02]">
+                              Book An <br /> Inspection Today.
+                            </span>
+                          </h1>
+                        </div>
+
+                        <div className="w-full flex flex-wrap items-center gap-2.5 sm:gap-3 justify-start">
+                          <ControlBar />
+
+                          <button
+                            className={[
+                              "inline-flex items-center justify-center",
+                              "rounded-full",
+                              "bg-[#00aeef]/15 backdrop-blur-sm border border-white/20",
+                              "hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef]",
+                              "text-white",
+                              "px-5 sm:px-6 md:px-7 py-2 sm:py-2.5",
+                              "font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest",
+                              "transition-all shadow-xl",
+                              "transform hover:-translate-y-1 active:translate-y-0",
+                            ].join(" ")}
+                            onClick={handleBookInspectionClick}
+                            type="button"
+                          >
+                            Book an inspection
+                          </button>
                         </div>
                       </div>
-
-                      {/* ROW 2 — Headline */}
-                      <div className="w-full">
-                        <h1 className="font-black tracking-tight text-white break-words">
-                          <span className="block text-white/80 text-[clamp(0.95rem,2.4vw,1.15rem)] leading-tight">
-                            Safe asbestos removal for NSW homes.
-                          </span>
-
-                          <span className="block text-[clamp(1.85rem,4.8vw,4.6rem)] leading-[0.98] mt-1">
-                            Worried About Asbestos?
-                          </span>
-
-                          <span className="block text-aes-cyan text-[clamp(1.35rem,3.8vw,3.6rem)] leading-[1.02]">
-                            Book An <br /> Inspection Today.
-                          </span>
-                        </h1>
-                      </div>
-
-                      {/* ROW 3 — Play + Book */}
-                      <div className="w-full flex flex-wrap items-center gap-2.5 sm:gap-3 justify-start">
-                        <ControlBar />
-
-                        <button
-                          className={[
-                            "inline-flex items-center justify-center",
-                            "rounded-full",
-                            "bg-[#00aeef]/15 backdrop-blur-sm border border-white/20",
-                            "hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef]",
-                            "text-white",
-                            "px-5 sm:px-6 md:px-7 py-2 sm:py-2.5",
-                            "font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest",
-                            "transition-all shadow-xl",
-                            "transform hover:-translate-y-1 active:translate-y-0",
-                          ].join(" ")}
-                          onClick={() => {
-                            const target = document.getElementById("contact");
-                            target?.scrollIntoView({ behavior: "smooth", block: "start" });
-                          }}
-                          type="button"
-                        >
-                          Book an inspection
-                        </button>
-                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <audio ref={audioRef} src={voiceover} preload="metadata" autoPlay muted />
+                  <audio ref={audioRef} src={voiceover} preload="metadata" autoPlay muted />
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* ... resto do seu código continua igual */}
-      </div>
-    </section>
-
-      {/* Floating mini controls (kept) */}
       {hasScrolled && (
         <div className="fixed bottom-4 left-4 z-[70]">
           <button
             type="button"
-            onClick={togglePlayPause}
+            onClick={() => togglePlayPause("floating_play_button")}
             className="inline-flex items-center gap-2 border border-blue-600 bg-white px-4 py-2 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold text-blue-600 transition-all duration-300 hover:bg-blue-50 hover:text-blue-700"
             aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
             aria-pressed={isPlaying}
