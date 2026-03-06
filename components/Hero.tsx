@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import voiceover from "../assets/AES-andrew_aes-JaredBatsonVoiceover_Revision 2.wav";
 
-/* 
-   Captions + Timing (easy to find / tweak)
- */
+/*
+   Captions + Timing
+*/
 
 const CAPTION_OFFSET_SECONDS = 0.15;
 
@@ -22,6 +22,7 @@ const SCRIPT_TEXT =
   "Absolute Environmental Services: Safe, Certified, Trusted.";
 
 const WORDS = SCRIPT_TEXT.replace(/[:.,]/g, "").split(/\s+/);
+
 const WORD_TIMES = [
   0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0,
   7.5, 8.0, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0,
@@ -38,11 +39,6 @@ const WORD_TIMES = [
   81.0, 81.5, 82.0, 82.5, 83.0, 83.5, 84.0, 84.5, 85.0, 85.5, 86.0, 86.5, 87.0,
   87.5, 88.0,
 ];
-
-const WORD_TIMELINE = WORDS.map((word, index) => ({
-  time: WORD_TIMES[index] ?? WORD_TIMES[WORD_TIMES.length - 1] ?? 0,
-  word,
-}));
 
 const PHRASES = [
   {
@@ -74,14 +70,23 @@ const PHRASES = [
     time: 62,
     text: "Our clients trust Absolute Environmental Services for responsive service, transparent pricing, and proven compliance.",
   },
-  { time: 70, text: "From residential homes to large commercial sites, no job is too big or too small." },
-  { time: 77, text: "Book your asbestos inspection or removal quote today and make your property safe for the future." },
-  { time: 85, text: "Absolute Environmental Services: Safe, Certified, Trusted." },
+  {
+    time: 70,
+    text: "From residential homes to large commercial sites, no job is too big or too small.",
+  },
+  {
+    time: 77,
+    text: "Book your asbestos inspection or removal quote today and make your property safe for the future.",
+  },
+  {
+    time: 85,
+    text: "Absolute Environmental Services: Safe, Certified, Trusted.",
+  },
 ];
 
-/* 
-   Background media (images/videos)
- */
+/*
+   Background media
+*/
 
 const mediaEntries = Object.entries(
   import.meta.glob("../assets/AES/*.{jpeg,jpg,png,mp4,webp}", {
@@ -122,26 +127,19 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
   onVolumeChange,
 }) => {
   const btnBase =
-    "select-none inline-flex items-center gap-2 rounded-lg " +
+    "select-none inline-flex items-center justify-center gap-2 rounded-full " +
     "border border-white/15 bg-white/10 text-white " +
-    "px-2.5 sm:px-3 py-1.5 sm:py-2 " +
+    "px-3 sm:px-4 py-2 " +
     "text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest " +
     "transition hover:bg-white/15 hover:border-white/25 active:scale-[0.99]";
 
   return (
-    <div className="max-w-full">
-      <div
-        className={[
-          "inline-flex max-w-full flex-wrap items-center gap-2 sm:gap-2.5",
-          "rounded-xl border border-white/10 bg-white/8 backdrop-blur-md",
-          "px-2.5 sm:px-3 py-2",
-          "shadow-[0_10px_30px_rgba(0,0,0,0.30)]",
-        ].join(" ")}
-      >
+    <div className="w-full flex flex-col items-center">
+      <div className="flex max-w-full flex-wrap items-center justify-center gap-2 sm:gap-2.5">
         <button
           type="button"
           onClick={onTogglePlayPause}
-          className={[btnBase, "border-aes-cyan/25 hover:border-aes-cyan/50", "flex-1 sm:flex-none"].join(" ")}
+          className={[btnBase, "border-aes-cyan/25 hover:border-aes-cyan/50"].join(" ")}
           aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
           aria-pressed={isPlaying}
         >
@@ -151,7 +149,7 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
         <button
           type="button"
           onClick={onStopReset}
-          className={[btnBase, "flex-1 sm:flex-none"].join(" ")}
+          className={btnBase}
           aria-label="Stop and reset"
         >
           <span>Stop</span>
@@ -160,7 +158,7 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
         <button
           type="button"
           onClick={onToggleMute}
-          className={[btnBase, "flex-1 sm:flex-none"].join(" ")}
+          className={btnBase}
           aria-label={isMuted ? "Unmute voiceover" : "Mute voiceover"}
         >
           <span>{isMuted ? "Unmute" : "Mute"}</span>
@@ -169,35 +167,32 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
         <button
           type="button"
           onClick={onToggleVolume}
-          className={[btnBase, "flex-1 sm:flex-none"].join(" ")}
+          className={btnBase}
           aria-label="Toggle volume slider"
           aria-expanded={showVolume}
         >
           <span>Vol</span>
         </button>
+      </div>
 
-        <div
-          className={[
-            "overflow-hidden transition-all duration-200 ease-out",
-            "basis-full sm:basis-auto",
-            showVolume ? "max-h-16 opacity-100" : "max-h-0 opacity-0",
-            "sm:max-h-none",
-            showVolume ? "sm:w-[190px] sm:opacity-100" : "sm:w-0 sm:opacity-0",
-          ].join(" ")}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="mt-2 sm:mt-0 sm:ml-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2">
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={volume}
-              onChange={(e) => onVolumeChange(Number(e.target.value))}
-              className="w-full sm:w-[170px] accent-aes-cyan"
-              aria-label="Volume"
-            />
-          </div>
+      <div
+        className={[
+          "overflow-hidden transition-all duration-200 ease-out",
+          showVolume ? "max-h-16 opacity-100 mt-3" : "max-h-0 opacity-0 mt-0",
+        ].join(" ")}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={volume}
+            onChange={(e) => onVolumeChange(Number(e.target.value))}
+            className="w-[180px] sm:w-[220px] accent-aes-cyan"
+            aria-label="Volume"
+          />
         </div>
       </div>
     </div>
@@ -207,9 +202,8 @@ const CaptionControls: React.FC<CaptionControlsProps> = ({
 const Hero: React.FC = () => {
   const heroSectionRef = useRef<HTMLElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const lastPhraseIndexRef = useRef(0);
-  const smoothedTimeRef = useRef(0);
+  const rafIdRef = useRef<number | null>(null);
+  const activeMediaRef = useRef(0);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(false);
@@ -217,15 +211,11 @@ const Hero: React.FC = () => {
   const [showVolume, setShowVolume] = useState(false);
   const [volume, setVolume] = useState(1);
   const [hasScrolled, setHasScrolled] = useState(false);
-
-  const rafIdRef = useRef<number | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
 
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [transitionIndex, setTransitionIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const activeMediaRef = useRef(0);
-
-  const [smoothTime, setSmoothTime] = useState(0);
 
   useEffect(() => {
     activeMediaRef.current = activeMediaIndex;
@@ -261,28 +251,25 @@ const Hero: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const resetCaptionTimeline = () => {
+    setCurrentTime(0);
+  };
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.muted = true;
-    setIsMuted(true);
-    setVolume(audio.volume ?? 1);
+    audio.volume = 1;
+    audio.preload = "auto";
 
-    const autoplayDelay = window.setTimeout(async () => {
-      try {
-        await audio.play();
-        audio.muted = false;
-        setIsMuted(false);
-        setIsAudioActive(true);
-      } catch {
-        // autoplay blocked
-      }
-    }, 500);
+    setIsMuted(true);
+    setVolume(1);
+    setIsPlaying(false);
+    setCurrentTime(0);
 
     const handlePlay = () => {
       setIsPlaying(true);
-      setIsAudioActive(true);
     };
 
     const handlePause = () => {
@@ -292,21 +279,31 @@ const Hero: React.FC = () => {
     const handleEnded = () => {
       setIsPlaying(false);
       setIsAudioActive(false);
+      setShowVolume(false);
+      setCurrentTime(audio.duration || 0);
     };
 
-    const handleVolumeChange = () => setIsMuted(audio.muted);
+    const handleVolumeChange = () => {
+      setIsMuted(audio.muted);
+      setVolume(audio.volume);
+    };
+
+    const handleLoadedMetadata = () => {
+      setCurrentTime(audio.currentTime || 0);
+    };
 
     audio.addEventListener("play", handlePlay);
     audio.addEventListener("pause", handlePause);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("volumechange", handleVolumeChange);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
 
     return () => {
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("volumechange", handleVolumeChange);
-      window.clearTimeout(autoplayDelay);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, []);
 
@@ -315,10 +312,7 @@ const Hero: React.FC = () => {
     if (!audio) return;
 
     const tick = () => {
-      const t = audio.currentTime || 0;
-      const alpha = 0.22;
-      smoothedTimeRef.current = smoothedTimeRef.current + alpha * (t - smoothedTimeRef.current);
-      setSmoothTime(smoothedTimeRef.current);
+      setCurrentTime(audio.currentTime || 0);
       rafIdRef.current = window.requestAnimationFrame(tick);
     };
 
@@ -327,6 +321,7 @@ const Hero: React.FC = () => {
     } else if (rafIdRef.current !== null) {
       window.cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
+      setCurrentTime(audio.currentTime || 0);
     }
 
     return () => {
@@ -337,29 +332,38 @@ const Hero: React.FC = () => {
     };
   }, [isPlaying]);
 
-  const adjustedTime = Math.max(0, smoothTime - CAPTION_OFFSET_SECONDS);
+  const adjustedTime = Math.max(0, currentTime - CAPTION_OFFSET_SECONDS);
 
   const phraseIndex = useMemo(() => {
     let idx = 0;
-
     for (let i = 1; i < PHRASES.length; i += 1) {
       if (adjustedTime >= PHRASES[i].time) idx = i;
       else break;
     }
-
-    const last = lastPhraseIndexRef.current;
-    const finalIdx = Math.max(last, idx);
-    lastPhraseIndexRef.current = finalIdx;
-
-    return finalIdx;
+    return idx;
   }, [adjustedTime]);
 
   const activePhraseText = PHRASES[phraseIndex]?.text ?? "";
 
-  const resetCaptionTimeline = () => {
-    lastPhraseIndexRef.current = 0;
-    smoothedTimeRef.current = 0;
-    setSmoothTime(0);
+  const startAudioAudible = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.muted = false;
+    if (audio.volume <= 0) {
+      audio.volume = 1;
+    }
+
+    setIsMuted(false);
+    setVolume(audio.volume);
+
+    try {
+      await audio.play();
+      setIsAudioActive(true);
+      setCurrentTime(audio.currentTime || 0);
+    } catch {
+      // browser may block in rare cases
+    }
   };
 
   const togglePlayPause = async (source: string = "hero_main_play_button") => {
@@ -373,24 +377,25 @@ const Hero: React.FC = () => {
       action: audio.paused ? "play" : "pause",
     });
 
-    setIsAudioActive(true);
+    const isHeroButton = source === "hero_main_play_button";
+
+    if (isHeroButton) {
+      if (audio.ended || audio.currentTime >= (audio.duration || 0) - 0.01) {
+        audio.currentTime = 0;
+        resetCaptionTimeline();
+      }
+
+      await startAudioAudible();
+      return;
+    }
 
     if (audio.paused) {
       if (audio.ended || audio.currentTime >= (audio.duration || 0) - 0.01) {
-        resetCaptionTimeline();
         audio.currentTime = 0;
+        resetCaptionTimeline();
       }
 
-      if (audio.volume > 0 && audio.muted) {
-        audio.muted = false;
-        setIsMuted(false);
-      }
-
-      try {
-        await audio.play();
-      } catch {
-        // user gesture required
-      }
+      await startAudioAudible();
     } else {
       audio.pause();
     }
@@ -407,8 +412,8 @@ const Hero: React.FC = () => {
     });
 
     audio.pause();
-    resetCaptionTimeline();
     audio.currentTime = 0;
+    resetCaptionTimeline();
 
     setIsAudioActive(false);
     setIsPlaying(false);
@@ -459,7 +464,9 @@ const Hero: React.FC = () => {
     <div className={["relative z-[999] pointer-events-auto", className].join(" ")}>
       <button
         type="button"
-        onClick={() => togglePlayPause("hero_main_play_button")}
+        onClick={() => {
+          void togglePlayPause("hero_main_play_button");
+        }}
         className={[
           "relative z-[999] pointer-events-auto",
           "inline-flex flex-wrap items-center gap-2",
@@ -470,11 +477,10 @@ const Hero: React.FC = () => {
           "transition-all duration-300 hover:border-aes-cyan",
           "shadow-[0_12px_40px_rgba(0,0,0,0.35)]",
         ].join(" ")}
-        aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
-        aria-pressed={isPlaying}
+        aria-label="Play voiceover"
       >
-        <span className="text-sm sm:text-base">{isPlaying ? "II" : "▶"}</span>
-        <span>{isPlaying ? "PAUSE" : "PLAY"}</span>
+        <span className="text-sm sm:text-base">▶</span>
+        <span>PLAY</span>
       </button>
     </div>
   );
@@ -562,27 +568,25 @@ const Hero: React.FC = () => {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,43,73,0.14) 0%, rgba(0,43,73,0.05) 55%, rgba(0,43,73,0.62) 100%)",
+                "linear-gradient(to bottom, rgba(0,43,73,0.14) 0%, rgba(0,43,73,0.05) 55%, rgba(0,43,73,0.72) 100%)",
             }}
           />
         </div>
 
         <div className="relative z-10 h-full">
-          <div className="mx-auto h-full w-full max-w-6xl px-4 sm:px-6 lg:px-10">
-            <div className="h-full w-full max-w-[52rem] min-w-0 flex flex-col justify-center">
-              <div className="w-full mx-auto sm:mx-0 text-left">
-                <div
-                  className={[
-                    "flex flex-col",
-                    "gap-4 sm:gap-5 lg:gap-6",
-                    "pt-3 sm:pt-8 md:pt-12",
-                    "pb-16 sm:pb-12",
-                    "mt-[3.25rem] sm:mt-[4.75rem] md:mt-[5.5rem]",
-                  ].join(" ")}
-                >
-                  {!isAudioActive && <div className="hidden sm:flex items-center justify-start gap-3" />}
-
-                  {!isAudioActive && (
+          <div className="mx-auto flex h-full w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+            {!isAudioActive ? (
+              <div className="w-full max-w-[52rem] min-w-0 flex flex-col justify-center">
+                <div className="w-full mx-auto sm:mx-0 text-left">
+                  <div
+                    className={[
+                      "flex flex-col",
+                      "gap-4 sm:gap-5 lg:gap-6",
+                      "pt-3 sm:pt-8 md:pt-12",
+                      "pb-16 sm:pb-12",
+                      "mt-[3.25rem] sm:mt-[4.75rem] md:mt-[5.5rem]",
+                    ].join(" ")}
+                  >
                     <div className="w-full max-w-[42rem]">
                       <div className="flex flex-col gap-3 sm:gap-4">
                         <div
@@ -649,21 +653,67 @@ const Hero: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  )}
-
-                  <audio ref={audioRef} src={voiceover} preload="metadata" autoPlay muted />
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex h-full w-full items-end justify-center pb-8 sm:pb-10 md:pb-12">
+                <div className="flex w-full max-w-[52rem] flex-col items-center justify-center gap-4 text-center">
+                  {activePhraseText && (
+                    <div className="w-full max-w-[44rem] rounded-2xl border border-white/15 bg-black/25 backdrop-blur-md px-4 py-4 sm:px-5 sm:py-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                      <p className="text-white text-[14px] sm:text-[16px] md:text-[18px] leading-relaxed font-medium">
+                        {activePhraseText}
+                      </p>
+                    </div>
+                  )}
+
+                  <CaptionControls
+                    isPlaying={isPlaying}
+                    isMuted={isMuted}
+                    volume={volume}
+                    showVolume={showVolume}
+                    onTogglePlayPause={() => {
+                      void togglePlayPause("hero_caption_controls");
+                    }}
+                    onStopReset={stopAndReset}
+                    onToggleMute={toggleMute}
+                    onToggleVolume={() => setShowVolume((prev) => !prev)}
+                    onVolumeChange={onVolumeChange}
+                  />
+
+                  <button
+                    className={[
+                      "inline-flex items-center justify-center",
+                      "rounded-full",
+                      "bg-[#00aeef]/15 backdrop-blur-sm border border-white/20",
+                      "hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef]",
+                      "text-white",
+                      "px-5 sm:px-6 md:px-7 py-2 sm:py-2.5",
+                      "font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest",
+                      "transition-all shadow-xl",
+                      "transform hover:-translate-y-1 active:translate-y-0",
+                    ].join(" ")}
+                    onClick={handleBookInspectionClick}
+                    type="button"
+                  >
+                    Book an inspection
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        <audio ref={audioRef} src={voiceover} preload="auto" />
       </section>
 
       {hasScrolled && (
         <div className="fixed bottom-4 left-4 z-[70]">
           <button
             type="button"
-            onClick={() => togglePlayPause("floating_play_button")}
+            onClick={() => {
+              void togglePlayPause("floating_play_button");
+            }}
             className="inline-flex items-center gap-2 border border-blue-600 bg-white px-4 py-2 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold text-blue-600 transition-all duration-300 hover:bg-blue-50 hover:text-blue-700"
             aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
             aria-pressed={isPlaying}
