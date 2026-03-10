@@ -695,7 +695,10 @@ const App: React.FC = () => {
 
                   <div className="flex justify-center">
                     <button
-                      onClick={() => track("submit_inquiry")}
+                      onClick={() => {
+                      track("Submited contact form");
+                      window.location.href = "/#contact";
+                      }}
                       type="submit"
                       disabled={submitSuccess}
                       className={
