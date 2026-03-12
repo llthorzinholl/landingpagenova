@@ -90,7 +90,7 @@ export default async function handler(req: any, res: any) {
       }
 
       await sql`
-        INSERT INTO contact_inquiries (
+        INSERT INTO landing_page_uploads (
           full_name,
           phone_number,
           email_address,
