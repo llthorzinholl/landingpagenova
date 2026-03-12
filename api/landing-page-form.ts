@@ -17,6 +17,7 @@ export default async function handler(req: any, res: any) {
     "https://australiasafe.com.au",
     "https://www.australiasafe.com.au",
     "http://localhost:3000",
+    "http://localhost:5173",
   ];
 
   const origin = req.headers.origin;
@@ -38,10 +39,14 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+    const body =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+
     const formType = sanitizeInput(body.form_type || "");
 
-    // PHOTO CHECK -> grava no Neon com a URL já recebida do Blob
+    // =========================
+    // PHOTO CHECK
+    // =========================
     if (formType === "visual_pre_assessment") {
       const fullName = sanitizeInput(body.full_name || body.name || "");
       const phoneNumber = sanitizeInput(body.phone_number || body.phone || "");
@@ -68,6 +73,13 @@ export default async function handler(req: any, res: any) {
       ) {
         return res.status(400).json({
           error: "Missing required Photo Check fields.",
+          debug: {
+            fullName,
+            phoneNumber,
+            emailAddress,
+            materialLocation,
+            imageUrl,
+          },
         });
       }
 
@@ -77,7 +89,7 @@ export default async function handler(req: any, res: any) {
         });
       }
 
-      await sql`
+      const result = await sql`
         insert into photo_checks (
           full_name,
           phone_number,
@@ -87,7 +99,8 @@ export default async function handler(req: any, res: any) {
           image_pathname,
           image_size_bytes,
           mime_type,
-          terms_accepted
+          terms_accepted,
+          status
         )
         values (
           ${fullName},
@@ -98,17 +111,22 @@ export default async function handler(req: any, res: any) {
           ${imagePathname || null},
           ${imageSizeBytes || null},
           ${mimeType || null},
-          ${termsAccepted}
+          ${termsAccepted},
+          ${"new"}
         )
+        returning id
       `;
 
       return res.status(200).json({
         success: true,
         message: "Photo Check submitted successfully.",
+        id: result?.[0]?.id ?? null,
       });
     }
 
-    // REQUEST QUOTE -> mantém JSON normal
+    // =========================
+    // REQUEST QUOTE
+    // =========================
     const fullName = sanitizeInput(body.full_name || "");
     const phoneNumber = sanitizeInput(body.phone_number || "");
     const emailAddress = sanitizeInput(body.email_address || "").toLowerCase();
@@ -121,8 +139,7 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // Se sua tabela do quote tiver outro nome, troque só esta parte
-    await sql`
+    const quoteResult = await sql`
       insert into contact_requests (
         full_name,
         phone_number,
@@ -137,16 +154,21 @@ export default async function handler(req: any, res: any) {
         ${serviceType || null},
         ${description}
       )
+      returning id
     `;
 
     return res.status(200).json({
       success: true,
       message: "Request Quote submitted successfully.",
+      id: quoteResult?.[0]?.id ?? null,
     });
   } catch (error: any) {
     console.error("landing-page-form error:", error);
+
     return res.status(500).json({
-      error: "Internal server error.",
+      error: error?.message || "Internal server error.",
+      detail:
+        error?.stack?.split("\n").slice(0, 5).join("\n") || null,
     });
   }
 }
