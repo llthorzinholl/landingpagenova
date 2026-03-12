@@ -140,7 +140,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const quoteResult = await sql`
-      insert into contact_requests (
+      insert into landing_page_uploads (
         full_name,
         phone_number,
         email_address,
