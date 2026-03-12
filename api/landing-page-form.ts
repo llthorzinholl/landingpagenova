@@ -1,127 +1,145 @@
-
 import { neon } from "@neondatabase/serverless";
-// Simple sanitization utility
-function sanitizeInput(input: string): string {
-  return String(input).replace(/[<>"'`]/g, "");
-}
 
-export default async function handler(req: any, res: any) {
-  // CORS (não atrapalha mesmo-origin e evita OPTIONS)
+const sql = neon(process.env.DATABASE_URL!);
 
-  // Restrict CORS to trusted domains in production
-  const allowedOrigins = [
-    "https://aeslanding.com", // example production domain
-    "http://localhost:3000"
-  ];
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    res.setHeader("Access-Control-Allow-Origin", allowedOrigins[0]);
+type QuoteBody = {
+  full_name?: string;
+  phone_number?: string;
+  email_address?: string;
+  service_type?: string;
+  description?: string;
+  form_type?: string;
+};
+
+type PhotoCheckBody = {
+  full_name?: string;
+  phone_number?: string;
+  email_address?: string;
+  material_location?: string;
+  image_url?: string;
+  image_pathname?: string;
+  image_size_bytes?: number;
+  mime_type?: string;
+  terms_accepted?: boolean;
+  form_type?: string;
+};
+
+export const config = {
+  api: {
+    bodyParser: true,
+  },
+};
+
+export default async function handler(request: Request) {
+  if (request.method !== "POST") {
+    return Response.json({ error: "Method not allowed" }, { status: 405 });
   }
-  res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(204).end();
 
   try {
-    const env = process.env.VERCEL_ENV ?? "unknown";
-    const hasDbUrl = !!process.env.DATABASE_URL;
+    const body = await request.json();
 
-    // ✅ DEBUG: abra /api/landing-page-form?debug=1 no browser
-    if (req.method === "GET" && req.query?.debug === "1") {
-      if (!hasDbUrl) {
-        return res.status(200).json({
-          ok: false,
-          env,
-          hasDatabaseUrl: false,
-          error: "DATABASE_URL is missing in Vercel environment variables",
-        });
+    if (body.form_type === "visual_pre_assessment") {
+      const photoBody = body as PhotoCheckBody;
+
+      const fullName = String(photoBody.full_name || "").trim();
+      const phoneNumber = String(photoBody.phone_number || "").trim();
+      const emailAddress = String(photoBody.email_address || "")
+        .trim()
+        .toLowerCase();
+      const materialLocation = String(photoBody.material_location || "").trim();
+      const imageUrl = String(photoBody.image_url || "").trim();
+      const imagePathname = String(photoBody.image_pathname || "").trim();
+      const imageSizeBytes = Number(photoBody.image_size_bytes || 0);
+      const mimeType = String(photoBody.mime_type || "").trim();
+      const termsAccepted = Boolean(photoBody.terms_accepted);
+
+      if (
+        !fullName ||
+        !phoneNumber ||
+        !emailAddress ||
+        !materialLocation ||
+        !imageUrl
+      ) {
+        return Response.json(
+          { error: "Missing required Photo Check fields." },
+          { status: 400 }
+        );
       }
 
-      const sql = neon(process.env.DATABASE_URL!);
+      await sql`
+        insert into photo_checks (
+          full_name,
+          phone_number,
+          email_address,
+          material_location,
+          image_url,
+          image_pathname,
+          image_size_bytes,
+          mime_type,
+          terms_accepted
+        )
+        values (
+          ${fullName},
+          ${phoneNumber},
+          ${emailAddress},
+          ${materialLocation},
+          ${imageUrl},
+          ${imagePathname || null},
+          ${imageSizeBytes || null},
+          ${mimeType || null},
+          ${termsAccepted}
+        )
+      `;
 
-      const t = await sql`SELECT to_regclass('public.landing_page_uploads') AS table_name`;
-      const table = t?.[0]?.table_name ?? null;
-
-      let totalRows: number | null = null;
-      if (table) {
-        const c = await sql`SELECT COUNT(*)::int AS total FROM landing_page_uploads`;
-        totalRows = c?.[0]?.total ?? null;
-      }
-
-      return res.status(200).json({
-        ok: true,
-        env,
-        hasDatabaseUrl: true,
-        table,
-        totalRows,
-        contentType: req.headers["content-type"] ?? null,
+      return Response.json({
+        success: true,
+        message: "Photo Check submitted successfully.",
       });
     }
 
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
+    const quoteBody = body as QuoteBody;
+
+    const fullName = String(quoteBody.full_name || "").trim();
+    const phoneNumber = String(quoteBody.phone_number || "").trim();
+    const emailAddress = String(quoteBody.email_address || "")
+      .trim()
+      .toLowerCase();
+    const serviceType = String(quoteBody.service_type || "").trim();
+    const description = String(quoteBody.description || "").trim();
+
+    if (!fullName || !phoneNumber || !emailAddress || !description) {
+      return Response.json(
+        { error: "Missing required Request Quote fields." },
+        { status: 400 }
+      );
     }
 
-    if (!hasDbUrl) {
-      return res.status(500).json({
-        error: "DATABASE_URL is missing in Vercel environment variables",
-      });
-    }
-
-    // ✅ Body robusto (pode vir string)
-    const body =
-      typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body ?? {});
-
-
-    let { full_name, phone_number, email_address, service_type, description } = body;
-
-    // Sanitize all inputs
-    full_name = full_name ? sanitizeInput(full_name) : "";
-    phone_number = phone_number ? sanitizeInput(phone_number) : "";
-    email_address = email_address ? sanitizeInput(email_address) : "";
-    service_type = service_type ? sanitizeInput(service_type) : "";
-    description = description ? sanitizeInput(description) : "";
-
-    // Validate required fields and email format
-    if (!full_name || !email_address) {
-      return res.status(400).json({ error: "Name and email are required" });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email_address)) {
-      return res.status(400).json({ error: "Invalid email format" });
-    }
-
-    const sql = neon(process.env.DATABASE_URL!);
-
-    // (Opcional) garante que a tabela existe e retorna erro mais claro
-    const t = await sql`SELECT to_regclass('public.landing_page_uploads') AS table_name`;
-    if (!t?.[0]?.table_name) {
-      return res.status(500).json({
-        error:
-          "Table landing_page_uploads does not exist in this database/branch. Create it in Neon (same env/branch).",
-      });
-    }
-
-
-    // Use parameterized queries (already safe with neon)
     await sql`
-      INSERT INTO landing_page_uploads
-        (full_name, phone_number, email_address, service_type, description)
-      VALUES
-        (${full_name}, ${phone_number || null}, ${email_address}, ${service_type || null}, ${description || null})
+      insert into contact_requests (
+        full_name,
+        phone_number,
+        email_address,
+        service_type,
+        description
+      )
+      values (
+        ${fullName},
+        ${phoneNumber},
+        ${emailAddress},
+        ${serviceType || null},
+        ${description}
+      )
     `;
 
-    return res.status(200).json({ success: true });
-  } catch (err: any) {
-    // Log error only in non-production
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.error("FUNCTION ERROR:", err);
-    }
-    return res.status(500).json({
-      error: "Internal Server Error"
+    return Response.json({
+      success: true,
+      message: "Request Quote submitted successfully.",
     });
+  } catch (error) {
+    console.error("landing-page-form API error:", error);
+    return Response.json(
+      { error: "Internal server error." },
+      { status: 500 }
+    );
   }
 }

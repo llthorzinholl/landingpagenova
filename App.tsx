@@ -9,12 +9,15 @@ import asbestosImage from "./assets/novasImgs/1.webp";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { track } from "@vercel/analytics";
+import { upload } from "@vercel/blob/client";
 
 const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 const VIMEO_THUMB = asbestosImage;
 
 const MAX_GENERAL_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
+
+
 
 const aboutPortfolioEntries = Object.entries(
   import.meta.glob("./assets/AES/*.{jpeg,jpg,png,webp}", {
@@ -279,80 +282,98 @@ const App: React.FC = () => {
   };
 
   const handleGeneralSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const validation = validateGeneralForm();
-    setGeneralErrors(validation);
-    setGeneralTouched({
-      name: true,
-      email: true,
-      phone: true,
-      location: true,
-      image: true,
-      terms: true,
+  const validation = validateGeneralForm();
+  setGeneralErrors(validation);
+  setGeneralTouched({
+    name: true,
+    email: true,
+    phone: true,
+    location: true,
+    image: true,
+    terms: true,
+  });
+
+  if (Object.keys(validation).length > 0) {
+    setGlobalError("Please correct the highlighted fields.");
+    return;
+  }
+
+  if (!generalImage) {
+    setGlobalError("Please attach an image.");
+    return;
+  }
+
+  setGlobalError(null);
+
+  try {
+    const uploadedBlob = await upload(
+      `photo-check-${Date.now()}-${generalImage.name}`,
+      generalImage,
+      {
+        access: "public",
+        handleUploadUrl: "/api/photo-check-upload",
+        clientPayload: JSON.stringify({
+          full_name: generalName.trim(),
+          phone_number: `+61${generalPhone.replace(/\D/g, "")}`,
+          email_address: generalEmail.trim().toLowerCase(),
+          material_location: generalLocation.trim(),
+          terms_accepted: generalAcceptedTerms,
+          form_type: "visual_pre_assessment",
+        }),
+      }
+    );
+
+    const res = await fetch("/api/landing-page-form", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        full_name: generalName.trim(),
+        phone_number: `+61${generalPhone.replace(/\D/g, "")}`,
+        email_address: generalEmail.trim().toLowerCase(),
+        material_location: generalLocation.trim(),
+        image_url: uploadedBlob.url,
+        image_pathname: uploadedBlob.pathname,
+        image_size_bytes: generalImage.size,
+        mime_type: generalImage.type,
+        terms_accepted: generalAcceptedTerms,
+        form_type: "visual_pre_assessment",
+      }),
     });
 
-    if (Object.keys(validation).length > 0) {
-      setGlobalError("Please correct the highlighted fields.");
+    const payload = await res.json();
+
+    if (!res.ok) {
+      setGlobalError(payload?.error || "Failed to send. Please try again.");
       return;
     }
 
-    if (!generalImage) {
-      setGlobalError("Please attach an image.");
-      return;
-    }
+    track("photo_check_submitted", {
+      source: "contact_section",
+      page: "home",
+      has_image: true,
+    });
 
+    setGeneralName("");
+    setGeneralPhone("");
+    setGeneralEmail("");
+    setGeneralLocation("");
+    setGeneralImage(null);
+    setGeneralAcceptedTerms(false);
+    setGeneralErrors({});
+    setGeneralTouched({});
     setGlobalError(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("full_name", generalName.trim());
-      formData.append("phone_number", `+61${generalPhone.replace(/\D/g, "")}`);
-      formData.append("email_address", generalEmail.trim().toLowerCase());
-      formData.append("service_type", "Photo Check");
-      formData.append("form_type", "visual_pre_assessment");
-      formData.append("material_location", generalLocation.trim());
-      formData.append("attachment", generalImage);
-      formData.append("terms_accepted", String(generalAcceptedTerms));
-
-      const res = await fetch("/api/landing-page-form", {
-        method: "POST",
-        body: formData,
-      });
-
-      const text = await res.text();
-      let payload: any = null;
-
-      try {
-        payload = JSON.parse(text);
-      } catch {}
-
-      if (!res.ok) {
-        setGlobalError(payload?.error || "Failed to send. Please try again.");
-        return;
-      }
-
-      track("photo_check_submitted", {
-        source: "contact_section",
-        page: "home",
-        has_image: true,
-      });
-
-      setGeneralName("");
-      setGeneralPhone("");
-      setGeneralEmail("");
-      setGeneralLocation("");
-      setGeneralImage(null);
-      setGeneralAcceptedTerms(false);
-      setGeneralErrors({});
-      setGeneralTouched({});
-      setGlobalError(null);
-      setShowTermsBox(false);
-      resetSuccessState();
-    } catch {
-      setGlobalError("Network error. Please try again.");
-    }
-  };
+    setShowTermsBox(false);
+    setSubmitSuccess(true);
+    setTimeout(() => setSubmitSuccess(false), 2000);
+  } catch (error) {
+    console.error("photo check submit error:", error);
+    setGlobalError("Failed to upload image or submit form.");
+  }
+};
 
   useEffect(() => {
     const items = Array.from(
