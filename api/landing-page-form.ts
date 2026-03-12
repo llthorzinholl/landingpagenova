@@ -194,11 +194,12 @@ export default async function handler(req: any, res: any) {
       error: "Unsupported form_type",
     });
   } catch (error: any) {
-    console.error("landing-page-form error:", error);
+  console.error("landing-page-form error full:", error);
 
-    return res.status(500).json({
-      error: "Failed to save form submission",
-      detail: error?.message || null,
-    });
-  }
+  return res.status(500).json({
+    error: "Failed to save form submission",
+    detail: error?.message || String(error) || null,
+    stack: error?.stack || null,
+  });
+}
 }
