@@ -14,7 +14,7 @@ const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 const VIMEO_THUMB = asbestosImage;
 
-const MAX_GENERAL_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+const MAX_GENERAL_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
 
 const aboutPortfolioEntries = Object.entries(
   import.meta.glob("./assets/AES/*.{jpeg,jpg,png,webp}", {
@@ -1209,7 +1209,7 @@ const App: React.FC = () => {
                       </div>
 
                       <p className="mt-2 text-xs text-slate-500">
-                        JPG or PNG only. Max 8MB. Please upload a clear photo of
+                        JPG or PNG only. Max 4MB. Please upload a clear photo of
                         the material.
                       </p>
 
