@@ -1,5 +1,5 @@
 -- Criação da tabela para armazenar envios do formulário de contato
-CREATE TABLE IF NOT EXISTS contact_inquiries (
+CREATE TABLE IF NOT EXISTS landing_page_uploads (
     id SERIAL PRIMARY KEY,
     full_name TEXT NOT NULL,
     phone_number TEXT,
