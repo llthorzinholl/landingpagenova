@@ -17,14 +17,14 @@ type UploadPayload = {
   email?: string;
 };
 
-export default async function handler(req: any, res: any) {
-  const allowedOrigins = [
-    "https://australiasafe.com.au",
-    "https://www.australiasafe.com.au",
-    "http://localhost:3000",
-    "http://localhost:5173",
-  ];
+const allowedOrigins = [
+  "https://australiasafe.com.au",
+  "https://www.australiasafe.com.au",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
 
+export default async function handler(req: any, res: any) {
   const origin = req.headers.origin;
 
   if (origin && allowedOrigins.includes(origin)) {
@@ -113,6 +113,7 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json(jsonResponse);
   } catch (error: any) {
     console.error("photo-check-upload error:", error);
+
     return res.status(400).json({
       error: error?.message || "Failed to generate upload token",
       detail: error?.stack?.split("\n").slice(0, 5).join("\n") || null,

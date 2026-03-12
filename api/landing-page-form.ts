@@ -1,9 +1,5 @@
 import { neon } from "@neondatabase/serverless";
 
-function sanitizeInput(input: string): string {
-  return String(input).replace(/[<>"'`]/g, "").trim();
-}
-
 const sql = neon(process.env.DATABASE_URL!);
 
 export const config = {
@@ -12,14 +8,14 @@ export const config = {
   },
 };
 
-export default async function handler(req: any, res: any) {
-  const allowedOrigins = [
-    "https://australiasafe.com.au",
-    "https://www.australiasafe.com.au",
-    "http://localhost:3000",
-    "http://localhost:5173",
-  ];
+const allowedOrigins = [
+  "https://australiasafe.com.au",
+  "https://www.australiasafe.com.au",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
 
+function setCors(req: any, res: any) {
   const origin = req.headers.origin;
 
   if (origin && allowedOrigins.includes(origin)) {
@@ -29,6 +25,19 @@ export default async function handler(req: any, res: any) {
 
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function isValidEmail(email: string) {
+  return /^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(email);
+}
+
+function isValidPhone(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= 11 && digits.length <= 12;
+}
+
+export default async function handler(req: any, res: any) {
+  setCors(req, res);
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -38,59 +47,118 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  if (!process.env.DATABASE_URL) {
+    return res.status(500).json({ error: "DATABASE_URL is not configured" });
+  }
+
   try {
-    const body =
-      typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
-    const formType = sanitizeInput(body.form_type || "");
+    const formType = String(body.form_type || "").trim();
 
-    // =========================
-    // PHOTO CHECK
-    // =========================
+    if (!formType) {
+      return res.status(400).json({ error: "form_type is required" });
+    }
+
+    if (formType === "quote") {
+      const fullName = String(body.full_name || "").trim();
+      const phoneNumber = String(body.phone_number || "").trim();
+      const emailAddress = String(body.email_address || "")
+        .trim()
+        .toLowerCase();
+      const serviceType = String(body.service_type || "").trim();
+      const description = String(body.description || "").trim();
+
+      if (!fullName || fullName.length < 2) {
+        return res.status(400).json({ error: "Invalid full_name" });
+      }
+
+      if (!isValidEmail(emailAddress)) {
+        return res.status(400).json({ error: "Invalid email_address" });
+      }
+
+      if (!isValidPhone(phoneNumber)) {
+        return res.status(400).json({ error: "Invalid phone_number" });
+      }
+
+      if (!serviceType) {
+        return res.status(400).json({ error: "service_type is required" });
+      }
+
+      if (!description || description.length < 10) {
+        return res.status(400).json({ error: "description is too short" });
+      }
+
+      await sql`
+        INSERT INTO landing_page_leads (
+          full_name,
+          phone_number,
+          email_address,
+          service_type,
+          description,
+          form_type
+        )
+        VALUES (
+          ${fullName},
+          ${phoneNumber},
+          ${emailAddress},
+          ${serviceType},
+          ${description},
+          ${formType}
+        )
+      `;
+
+      return res.status(200).json({
+        success: true,
+        message: "Quote form submitted successfully",
+      });
+    }
+
     if (formType === "visual_pre_assessment") {
-      const fullName = sanitizeInput(body.full_name || body.name || "");
-      const phoneNumber = sanitizeInput(body.phone_number || body.phone || "");
-      const emailAddress = sanitizeInput(
-        body.email_address || body.email || ""
-      ).toLowerCase();
-      const materialLocation = sanitizeInput(
-        body.material_location || body.location || ""
-      );
-      const imageUrl = sanitizeInput(body.image_url || "");
-      const imagePathname = sanitizeInput(body.image_pathname || "");
-      const mimeType = sanitizeInput(body.mime_type || "");
+      const fullName = String(body.full_name || "").trim();
+      const phoneNumber = String(body.phone_number || "").trim();
+      const emailAddress = String(body.email_address || "")
+        .trim()
+        .toLowerCase();
+      const materialLocation = String(body.material_location || "").trim();
+      const imageUrl = String(body.image_url || "").trim();
+      const imagePathname = String(body.image_pathname || "").trim();
+      const mimeType = String(body.mime_type || "").trim();
       const imageSizeBytes = Number(body.image_size_bytes || 0);
       const termsAccepted =
         body.terms_accepted === true ||
         String(body.terms_accepted).toLowerCase() === "true";
 
-      if (
-        !fullName ||
-        !phoneNumber ||
-        !emailAddress ||
-        !materialLocation ||
-        !imageUrl
-      ) {
-        return res.status(400).json({
-          error: "Missing required Photo Check fields.",
-          debug: {
-            fullName,
-            phoneNumber,
-            emailAddress,
-            materialLocation,
-            imageUrl,
-          },
-        });
+      if (!fullName || fullName.length < 2) {
+        return res.status(400).json({ error: "Invalid full_name" });
+      }
+
+      if (!isValidEmail(emailAddress)) {
+        return res.status(400).json({ error: "Invalid email_address" });
+      }
+
+      if (!isValidPhone(phoneNumber)) {
+        return res.status(400).json({ error: "Invalid phone_number" });
+      }
+
+      if (!materialLocation || materialLocation.length < 5) {
+        return res.status(400).json({ error: "Invalid material_location" });
+      }
+
+      if (!imageUrl) {
+        return res.status(400).json({ error: "image_url is required" });
+      }
+
+      if (!["image/jpeg", "image/png"].includes(mimeType)) {
+        return res.status(400).json({ error: "Invalid mime_type" });
       }
 
       if (!termsAccepted) {
-        return res.status(400).json({
-          error: "Terms must be accepted.",
-        });
+        return res.status(400).json({ error: "Terms must be accepted" });
       }
 
-      const result = await sql`
-        insert into photo_checks (
+      await sql`
+        INSERT INTO photo_check_submissions (
           full_name,
           phone_number,
           email_address,
@@ -100,75 +168,37 @@ export default async function handler(req: any, res: any) {
           image_size_bytes,
           mime_type,
           terms_accepted,
-          status
+          form_type
         )
-        values (
+        VALUES (
           ${fullName},
           ${phoneNumber},
           ${emailAddress},
           ${materialLocation},
           ${imageUrl},
-          ${imagePathname || null},
-          ${imageSizeBytes || null},
-          ${mimeType || null},
+          ${imagePathname},
+          ${imageSizeBytes},
+          ${mimeType},
           ${termsAccepted},
-          ${"new"}
+          ${formType}
         )
-        returning id
       `;
 
       return res.status(200).json({
         success: true,
-        message: "Photo Check submitted successfully.",
-        id: result?.[0]?.id ?? null,
+        message: "Photo check submitted successfully",
       });
     }
 
-    // =========================
-    // REQUEST QUOTE
-    // =========================
-    const fullName = sanitizeInput(body.full_name || "");
-    const phoneNumber = sanitizeInput(body.phone_number || "");
-    const emailAddress = sanitizeInput(body.email_address || "").toLowerCase();
-    const serviceType = sanitizeInput(body.service_type || "");
-    const description = sanitizeInput(body.description || "");
-
-    if (!fullName || !phoneNumber || !emailAddress || !description) {
-      return res.status(400).json({
-        error: "Missing required Request Quote fields.",
-      });
-    }
-
-    const quoteResult = await sql`
-      insert into landing_page_uploads (
-        full_name,
-        phone_number,
-        email_address,
-        service_type,
-        description
-      )
-      values (
-        ${fullName},
-        ${phoneNumber},
-        ${emailAddress},
-        ${serviceType || null},
-        ${description}
-      )
-      returning id
-    `;
-
-    return res.status(200).json({
-      success: true,
-      message: "Request Quote submitted successfully.",
-      id: quoteResult?.[0]?.id ?? null,
+    return res.status(400).json({
+      error: "Unsupported form_type",
     });
   } catch (error: any) {
     console.error("landing-page-form error:", error);
 
     return res.status(500).json({
-      error: error?.message || "Internal server error.",
-      detail:
-        error?.stack?.split("\n").slice(0, 5).join("\n") || null,
+      error: "Failed to save form submission",
+      detail: error?.message || null,
     });
   }
 }
