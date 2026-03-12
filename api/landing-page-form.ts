@@ -90,7 +90,7 @@ export default async function handler(req: any, res: any) {
       }
 
       await sql`
-        INSERT INTO landing_page_leads (
+        INSERT INTO landing_page_uploads (
           full_name,
           phone_number,
           email_address,
@@ -158,7 +158,7 @@ export default async function handler(req: any, res: any) {
       }
 
       await sql`
-        INSERT INTO photo_check_submissions (
+        INSERT INTO photo_checks (
           full_name,
           phone_number,
           email_address,
