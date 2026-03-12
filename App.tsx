@@ -307,26 +307,33 @@ const App: React.FC = () => {
 
   try {
     const cleanName = generalName.trim();
-    const cleanEmail = generalEmail.trim().toLowerCase();
-    const cleanPhone = `+61${generalPhone.replace(/\D/g, "")}`;
-    const cleanLocation = generalLocation.trim();
+const cleanEmail = generalEmail.trim().toLowerCase();
+const cleanPhone = `+61${generalPhone.replace(/\D/g, "")}`;
+const cleanLocation = generalLocation.trim();
 
-    const uploadedBlob = await upload(
-      `photo-check-${Date.now()}-${generalImage.name}`,
-      generalImage,
-      {
-        access: "public",
-        handleUploadUrl: "/api/photo-check-upload",
-        clientPayload: JSON.stringify({
-          full_name: cleanName,
-          email_address: cleanEmail,
-          phone_number: cleanPhone,
-          material_location: cleanLocation,
-          terms_accepted: generalAcceptedTerms,
-          form_type: "visual_pre_assessment",
-        }),
-      }
-    );
+const safeFileName = generalImage.name
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/\s+/g, "-")
+  .replace(/[^a-zA-Z0-9._-]/g, "");
+
+const uploadedBlob = await upload(
+  `photo-check-${Date.now()}-${safeFileName}`,
+  generalImage,
+  {
+    access: "public",
+    contentType: generalImage.type,
+    handleUploadUrl: "/api/photo-check-upload",
+    clientPayload: JSON.stringify({
+      full_name: cleanName,
+      email_address: cleanEmail,
+      phone_number: cleanPhone,
+      material_location: cleanLocation,
+      terms_accepted: generalAcceptedTerms,
+      form_type: "visual_pre_assessment",
+    }),
+  }
+);
 
     const res = await fetch("/api/landing-page-form", {
       method: "POST",

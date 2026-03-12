@@ -22,6 +22,7 @@ export default async function handler(req: any, res: any) {
     "https://australiasafe.com.au",
     "https://www.australiasafe.com.au",
     "http://localhost:3000",
+    "http://localhost:5173",
   ];
 
   const origin = req.headers.origin;
@@ -114,6 +115,7 @@ export default async function handler(req: any, res: any) {
     console.error("photo-check-upload error:", error);
     return res.status(400).json({
       error: error?.message || "Failed to generate upload token",
+      detail: error?.stack?.split("\n").slice(0, 5).join("\n") || null,
     });
   }
 }
