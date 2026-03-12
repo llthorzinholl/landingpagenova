@@ -17,26 +17,51 @@ type UploadPayload = {
   email?: string;
 };
 
-export default async function handler(request: Request) {
-  const body = (await request.json()) as HandleUploadBody;
+export default async function handler(req: any, res: any) {
+  const allowedOrigins = [
+    "https://australiasafe.com.au",
+    "https://www.australiasafe.com.au",
+    "http://localhost:3000",
+  ];
+
+  const origin = req.headers.origin;
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   try {
+    const body: HandleUploadBody =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+
     const jsonResponse = await handleUpload({
       body,
-      request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
+      request: req,
+      onBeforeGenerateToken: async (_pathname, clientPayload) => {
         const parsed: UploadPayload = clientPayload
           ? JSON.parse(clientPayload)
           : {};
 
-        const fullName = (parsed.full_name || parsed.name || "").trim();
-        const emailAddress = (
-          parsed.email_address ||
-          parsed.email ||
-          ""
-        ).trim().toLowerCase();
-        const phoneNumber = (parsed.phone_number || "").trim();
-        const materialLocation = (parsed.material_location || "").trim();
+        const fullName = String(parsed.full_name || parsed.name || "").trim();
+        const emailAddress = String(
+          parsed.email_address || parsed.email || ""
+        )
+          .trim()
+          .toLowerCase();
+        const phoneNumber = String(parsed.phone_number || "").trim();
+        const materialLocation = String(parsed.material_location || "").trim();
         const termsAccepted =
           parsed.terms_accepted === true ||
           String(parsed.terms_accepted).toLowerCase() === "true";
@@ -84,11 +109,11 @@ export default async function handler(request: Request) {
       },
     });
 
-    return Response.json(jsonResponse);
-  } catch (error) {
-    return Response.json(
-      { error: (error as Error).message },
-      { status: 400 }
-    );
+    return res.status(200).json(jsonResponse);
+  } catch (error: any) {
+    console.error("photo-check-upload error:", error);
+    return res.status(400).json({
+      error: error?.message || "Failed to generate upload token",
+    });
   }
 }
