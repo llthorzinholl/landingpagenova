@@ -15,7 +15,7 @@ const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 const VIMEO_THUMB = asbestosImage;
 
-const MAX_GENERAL_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
+const MAX_GENERAL_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
 const aboutPortfolioEntries = Object.entries(
   import.meta.glob("./assets/AES/*.{jpeg,jpg,png,webp}", {
@@ -191,7 +191,7 @@ const App: React.FC = () => {
       if (!allowedTypes.includes(generalImage.type)) {
         newErrors.image = "Only JPG and PNG images are allowed";
       } else if (generalImage.size > MAX_GENERAL_IMAGE_SIZE_BYTES) {
-        newErrors.image = "Image must be under 4MB";
+        newErrors.image = "Image must be under 10MB";
       }
     }
 
@@ -1232,7 +1232,7 @@ const handleGeneralSubmit = async (e: React.FormEvent) => {
                                   return "Only JPG and PNG images are allowed";
                                 }
                                 if (file.size > MAX_GENERAL_IMAGE_SIZE_BYTES) {
-                                  return "Image must be under 4MB";
+                                  return "Image must be under 10MB";
                                 }
                                 return undefined;
                               })();
@@ -1255,7 +1255,7 @@ const handleGeneralSubmit = async (e: React.FormEvent) => {
                       </div>
 
                       <p className="mt-2 text-xs text-slate-500">
-                        JPG or PNG only. Max 4MB. Please upload a clear photo of
+                        JPG or PNG only. Max 10MB. Please upload a clear photo of
                         the material.
                       </p>
 
