@@ -279,7 +279,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleGeneralSubmit = async (e: React.FormEvent) => {
+const handleGeneralSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
   const validation = validateGeneralForm();
@@ -307,33 +307,33 @@ const App: React.FC = () => {
 
   try {
     const cleanName = generalName.trim();
-const cleanEmail = generalEmail.trim().toLowerCase();
-const cleanPhone = `+61${generalPhone.replace(/\D/g, "")}`;
-const cleanLocation = generalLocation.trim();
+    const cleanEmail = generalEmail.trim().toLowerCase();
+    const cleanPhone = `+61${generalPhone.replace(/\D/g, "")}`;
+    const cleanLocation = generalLocation.trim();
 
-const safeFileName = generalImage.name
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/\s+/g, "-")
-  .replace(/[^a-zA-Z0-9._-]/g, "");
+    const safeFileName = generalImage.name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9._-]/g, "");
 
-const uploadedBlob = await upload(
-  `photo-check-${Date.now()}-${safeFileName}`,
-  generalImage,
-  {
-    access: "public",
-    contentType: generalImage.type,
-    handleUploadUrl: "/api/photo-check-upload",
-    clientPayload: JSON.stringify({
-      full_name: cleanName,
-      email_address: cleanEmail,
-      phone_number: cleanPhone,
-      material_location: cleanLocation,
-      terms_accepted: generalAcceptedTerms,
-      form_type: "visual_pre_assessment",
-    }),
-  }
-);
+    const uploadedBlob = await upload(
+      `photo-check-${Date.now()}-${safeFileName}`,
+      generalImage,
+      {
+        access: "public",
+        contentType: generalImage.type,
+        handleUploadUrl: "/api/photo-check-upload",
+        clientPayload: JSON.stringify({
+          full_name: cleanName,
+          email_address: cleanEmail,
+          phone_number: cleanPhone,
+          material_location: cleanLocation,
+          terms_accepted: generalAcceptedTerms,
+          form_type: "visual_pre_assessment",
+        }),
+      }
+    );
 
     const res = await fetch("/api/landing-page-form", {
       method: "POST",
@@ -363,6 +363,7 @@ const uploadedBlob = await upload(
 
     if (!res.ok) {
       setGlobalError(payload?.error || "Failed to send. Please try again.");
+      console.error("Photo Check API error:", payload);
       return;
     }
 
