@@ -17,6 +17,16 @@ const VIMEO_THUMB = asbestosImage;
 
 const MAX_GENERAL_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 
+const SERVICE_OPTIONS = [
+  "External Asbestos Removal",
+  "Internal Asbestos Removal",
+  "Roof and Eaves Removal",
+  "Make Safe",
+  "Others",
+] as const;
+
+type ServiceOption = (typeof SERVICE_OPTIONS)[number];
+
 const aboutPortfolioEntries = Object.entries(
   import.meta.glob("./assets/AES/*.{jpeg,jpg,png,webp}", {
     eager: true,
@@ -56,6 +66,11 @@ const aboutPortfolioPairs = aboutPortfolioItems.reduce<
   return acc;
 }, []);
 
+const normalizeAustralianPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  return digits.startsWith("0") ? `+61${digits.slice(1)}` : `+61${digits}`;
+};
+
 const App: React.FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
@@ -71,7 +86,9 @@ const App: React.FC = () => {
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [contactService, setContactService] = useState("External Asbestos Removal");
+  const [contactService, setContactService] = useState<ServiceOption>(
+    "External Asbestos Removal"
+  );
   const [contactDesc, setContactDesc] = useState("");
   const [errors, setErrors] = useState<{
     name?: string;
@@ -234,28 +251,35 @@ const App: React.FC = () => {
     setGlobalError(null);
 
     try {
+      const normalizedContactPhone = normalizeAustralianPhone(contactPhone);
+
+      const payload = {
+        full_name: contactName.trim(),
+        phone_number: normalizedContactPhone,
+        email_address: contactEmail.trim().toLowerCase(),
+        service_type: contactService,
+        description: contactDesc.trim(),
+        form_type: "quote",
+      };
+
+      console.log("quote payload being sent:", payload);
+
       const res = await fetch("/api/landing-page-form", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: contactName.trim(),
-          phone_number: `+61${contactPhone.replace(/\D/g, "")}`,
-          email_address: contactEmail.trim().toLowerCase(),
-          service_type: contactService,
-          description: contactDesc.trim(),
-          form_type: "quote",
-        }),
+        body: JSON.stringify(payload),
       });
 
       const text = await res.text();
-      let payload: any = null;
+      let payloadResponse: any = null;
 
       try {
-        payload = JSON.parse(text);
+        payloadResponse = JSON.parse(text);
       } catch {}
 
       if (!res.ok) {
-        setGlobalError(payload?.error || "Failed to send. Please try again.");
+        setGlobalError(payloadResponse?.error || "Failed to send. Please try again.");
+        console.error("Quote API error:", payloadResponse);
         return;
       }
 
@@ -274,73 +298,69 @@ const App: React.FC = () => {
       setTouched({});
       setGlobalError(null);
       resetSuccessState();
-    } catch {
+    } catch (error) {
+      console.error("quote submit error:", error);
       setGlobalError("Network error. Please try again.");
     }
   };
 
-const handleGeneralSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleGeneralSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const validation = validateGeneralForm();
-  setGeneralErrors(validation);
-  setGeneralTouched({
-    name: true,
-    email: true,
-    phone: true,
-    location: true,
-    image: true,
-    terms: true,
-  });
+    const validation = validateGeneralForm();
+    setGeneralErrors(validation);
+    setGeneralTouched({
+      name: true,
+      email: true,
+      phone: true,
+      location: true,
+      image: true,
+      terms: true,
+    });
 
-  if (Object.keys(validation).length > 0) {
-    setGlobalError("Please correct the highlighted fields.");
-    return;
-  }
+    if (Object.keys(validation).length > 0) {
+      setGlobalError("Please correct the highlighted fields.");
+      return;
+    }
 
-  if (!generalImage) {
-    setGlobalError("Please attach an image.");
-    return;
-  }
+    if (!generalImage) {
+      setGlobalError("Please attach an image.");
+      return;
+    }
 
-  setGlobalError(null);
+    setGlobalError(null);
 
-  try {
-    const cleanName = generalName.trim();
-    const cleanEmail = generalEmail.trim().toLowerCase();
-    const cleanPhone = `+61${generalPhone.replace(/\D/g, "")}`;
-    const cleanLocation = generalLocation.trim();
+    try {
+      const cleanName = generalName.trim();
+      const cleanEmail = generalEmail.trim().toLowerCase();
+      const cleanPhone = normalizeAustralianPhone(generalPhone);
+      const cleanLocation = generalLocation.trim();
 
-    const safeFileName = generalImage.name
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/[^a-zA-Z0-9._-]/g, "");
+      const safeFileName = generalImage.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/[^a-zA-Z0-9._-]/g, "");
 
-    const uploadedBlob = await upload(
-      `photo-check-${Date.now()}-${safeFileName}`,
-      generalImage,
-      {
-        access: "public",
-        contentType: generalImage.type,
-        handleUploadUrl: "/api/photo-check-upload",
-        clientPayload: JSON.stringify({
-          full_name: cleanName,
-          email_address: cleanEmail,
-          phone_number: cleanPhone,
-          material_location: cleanLocation,
-          terms_accepted: generalAcceptedTerms,
-          form_type: "visual_pre_assessment",
-        }),
-      }
-    );
+      const uploadedBlob = await upload(
+        `photo-check-${Date.now()}-${safeFileName}`,
+        generalImage,
+        {
+          access: "public",
+          contentType: generalImage.type,
+          handleUploadUrl: "/api/photo-check-upload",
+          clientPayload: JSON.stringify({
+            full_name: cleanName,
+            email_address: cleanEmail,
+            phone_number: cleanPhone,
+            material_location: cleanLocation,
+            terms_accepted: generalAcceptedTerms,
+            form_type: "visual_pre_assessment",
+          }),
+        }
+      );
 
-    const res = await fetch("/api/landing-page-form", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+      const payload = {
         full_name: cleanName,
         phone_number: cleanPhone,
         email_address: cleanEmail,
@@ -351,44 +371,53 @@ const handleGeneralSubmit = async (e: React.FormEvent) => {
         mime_type: generalImage.type,
         terms_accepted: generalAcceptedTerms,
         form_type: "visual_pre_assessment",
-      }),
-    });
+      };
 
-    const text = await res.text();
-    let payload: any = null;
+      console.log("photo check payload being sent:", payload);
 
-    try {
-      payload = JSON.parse(text);
-    } catch {}
+      const res = await fetch("/api/landing-page-form", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) {
-      setGlobalError(payload?.error || "Failed to send. Please try again.");
-      console.error("Photo Check API error:", payload);
-      return;
+      const text = await res.text();
+      let payloadResponse: any = null;
+
+      try {
+        payloadResponse = JSON.parse(text);
+      } catch {}
+
+      if (!res.ok) {
+        setGlobalError(payloadResponse?.error || "Failed to send. Please try again.");
+        console.error("Photo Check API error:", payloadResponse);
+        return;
+      }
+
+      track("photo_check_submitted", {
+        source: "contact_section",
+        page: "home",
+        has_image: true,
+      });
+
+      setGeneralName("");
+      setGeneralPhone("");
+      setGeneralEmail("");
+      setGeneralLocation("");
+      setGeneralImage(null);
+      setGeneralAcceptedTerms(false);
+      setGeneralErrors({});
+      setGeneralTouched({});
+      setGlobalError(null);
+      setShowTermsBox(false);
+      resetSuccessState();
+    } catch (error) {
+      console.error("photo check submit error:", error);
+      setGlobalError("Failed to upload image or submit form.");
     }
-
-    track("photo_check_submitted", {
-      source: "contact_section",
-      page: "home",
-      has_image: true,
-    });
-
-    setGeneralName("");
-    setGeneralPhone("");
-    setGeneralEmail("");
-    setGeneralLocation("");
-    setGeneralImage(null);
-    setGeneralAcceptedTerms(false);
-    setGeneralErrors({});
-    setGeneralTouched({});
-    setGlobalError(null);
-    setShowTermsBox(false);
-    resetSuccessState();
-  } catch (error) {
-    console.error("photo check submit error:", error);
-    setGlobalError("Failed to upload image or submit form.");
-  }
-};
+  };
 
   useEffect(() => {
     const items = Array.from(
@@ -531,7 +560,11 @@ const handleGeneralSubmit = async (e: React.FormEvent) => {
         <section id="services">
           <ServicesSection
             onSelectService={(svc) => {
-              setContactService(svc);
+              const normalizedService = SERVICE_OPTIONS.includes(svc as ServiceOption)
+                ? (svc as ServiceOption)
+                : "Others";
+
+              setContactService(normalizedService);
               setActiveContactTab("quote");
             }}
           />
@@ -973,15 +1006,16 @@ const handleGeneralSubmit = async (e: React.FormEvent) => {
                       </label>
                       <div className="relative">
                         <select
+                          name="service_type"
                           className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all appearance-none"
                           value={contactService}
-                          onChange={(e) => setContactService(e.target.value)}
+                          onChange={(e) => setContactService(e.target.value as ServiceOption)}
                         >
-                          <option>External Asbestos Removal</option>
-                          <option>Internal Asbestos Removal</option>
-                          <option>Roof and Eaves Removal</option>
-                          <option>Make Safe</option>
-                          <option>Others</option>
+                          {SERVICE_OPTIONS.map((service) => (
+                            <option key={service} value={service}>
+                              {service}
+                            </option>
+                          ))}
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
                           <svg
