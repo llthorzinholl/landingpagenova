@@ -1006,7 +1006,7 @@ const App: React.FC = () => {
                       </label>
                       <div className="relative">
                         <select
-                          name="service_type"
+                          name="form_type"
                           className="w-full bg-slate-50 border border-slate-200 rounded px-4 py-3 md:px-6 md:py-4 focus:ring-2 focus:ring-aes-cyan outline-none transition-all appearance-none"
                           value={contactService}
                           onChange={(e) => setContactService(e.target.value as ServiceOption)}
