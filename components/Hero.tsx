@@ -288,10 +288,12 @@ const Hero: React.FC = () => {
       await audio.play();
       setIsAudioActive(true);
       setCurrentTime(audio.currentTime || 0);
-    } catch {}
+    } catch {
+      // ignore browser play restrictions
+    }
   };
 
-  const togglePlayPause = async (source: string = "hero_main_play_button") => {
+  const togglePlayPause = async (source: string = "hero_voiceover_button") => {
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -301,17 +303,6 @@ const Hero: React.FC = () => {
       section: "hero",
       action: audio.paused ? "play" : "pause",
     });
-
-    const isHeroButton = source === "hero_main_play_button";
-
-    if (isHeroButton) {
-      if (audio.ended || audio.currentTime >= (audio.duration || 0) - 0.01) {
-        audio.currentTime = 0;
-        resetCaptionTimeline();
-      }
-      await startAudioAudible();
-      return;
-    }
 
     if (audio.paused) {
       if (audio.ended || audio.currentTime >= (audio.duration || 0) - 0.01) {
@@ -370,87 +361,61 @@ const Hero: React.FC = () => {
     }
   };
 
-  const scrollToContact = () => {
-    const target = document.getElementById("contact");
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   const handleBookInspectionClick = () => {
     track("hero_cta_clicked", {
       source: "hero",
-      cta_name: "book_an_inspection",
+      cta_name: "book_inspection",
       page: "home",
     });
+
     window.dispatchEvent(new CustomEvent("openRequestQuote"));
-    scrollToContact();
   };
 
-  const handlePhotoCheckClick = () => {
+  const handleCallNowClick = () => {
     track("hero_cta_clicked", {
       source: "hero",
-      cta_name: "photo_check",
+      cta_name: "call_now",
       page: "home",
     });
-    window.dispatchEvent(new CustomEvent("openVisualPreTest"));
-    scrollToContact();
+
+    window.location.href = "tel:0425257142";
   };
 
-  const sharedButtonWidth =
-    "w-[170px] sm:w-[180px] md:w-[190px]";
-
-  const ctaButtonClass = [
-    "inline-flex items-center justify-center",
-    sharedButtonWidth,
-    "rounded-full",
-    "bg-[#00aeef]/15 backdrop-blur-sm border border-white/20",
-    "hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef]",
-    "text-white",
-    "px-4 sm:px-5 py-2.5 sm:py-3",
-    "font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest",
-    "transition-all shadow-xl",
-    "transform hover:-translate-y-1 active:translate-y-0",
-  ].join(" ");
-
-  const photoCheckButtonClass = [
-    "inline-flex items-center justify-center",
-    sharedButtonWidth,
-    "rounded-full",
-    "bg-white/10 backdrop-blur-sm border border-white/15",
-    "hover:bg-white hover:border-[#00aeef] hover:text-[#00aeef]",
-    "text-white",
-    "px-4 sm:px-5 py-2.5 sm:py-3",
-    "font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest",
-    "transition-all shadow-xl",
-    "transform hover:-translate-y-1 active:translate-y-0",
-  ].join(" ");
-
-  const controlButtonClass = [
-    "relative z-[999] pointer-events-auto",
+  const primaryButtonClass = [
     "inline-flex items-center justify-center gap-2",
-    sharedButtonWidth,
-    "border border-white/35 bg-white/10 backdrop-blur-md",
-    "rounded-full px-4 sm:px-5 py-2.5 sm:py-3",
-    "text-[10px] sm:text-xs uppercase tracking-widest font-extrabold",
-    "text-white",
-    "transition-all duration-300 hover:border-aes-cyan",
-    "shadow-[0_12px_40px_rgba(0,0,0,0.35)]",
+    "rounded-full",
+    "bg-white text-aes-navy",
+    "border border-white",
+    "px-5 sm:px-6 py-3 sm:py-3.5",
+    "font-extrabold text-[11px] sm:text-[12px] uppercase tracking-[0.18em]",
+    "transition-all duration-300",
+    "shadow-[0_14px_35px_rgba(255,255,255,0.12)]",
+    "hover:-translate-y-0.5 hover:bg-aes-cyan hover:border-aes-cyan",
+    "active:translate-y-0",
+    "min-w-[190px]",
   ].join(" ");
 
-  const ControlBar = () => (
-    <div className="relative z-[999] pointer-events-auto">
-      <button
-        type="button"
-        onClick={() => {
-          void togglePlayPause("hero_main_play_button");
-        }}
-        className={controlButtonClass}
-        aria-label="Play voiceover"
-      >
-        <span className="text-sm sm:text-base">▶</span>
-        <span>PLAY</span>
-      </button>
-    </div>
-  );
+  const secondaryButtonClass = [
+    "inline-flex items-center justify-center gap-2",
+    "rounded-full",
+    "bg-white/8 text-white backdrop-blur-md",
+    "border border-white/18",
+    "px-5 sm:px-6 py-3 sm:py-3.5",
+    "font-extrabold text-[11px] sm:text-[12px] uppercase tracking-[0.18em]",
+    "transition-all duration-300",
+    "hover:-translate-y-0.5 hover:bg-white/14 hover:border-white/28",
+    "active:translate-y-0",
+    "min-w-[190px]",
+  ].join(" ");
+
+  const smallGhostButtonClass = [
+    "inline-flex items-center justify-center gap-2",
+    "rounded-full",
+    "border border-white/14 bg-white/6 backdrop-blur-md",
+    "px-4 py-2.5",
+    "text-[10px] sm:text-[11px] uppercase tracking-[0.18em] font-extrabold text-white",
+    "transition-all duration-300 hover:bg-white/10 hover:border-white/22",
+  ].join(" ");
 
   return (
     <>
@@ -463,80 +428,78 @@ const Hero: React.FC = () => {
         }}
       >
         <div className="absolute inset-0 z-0 overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative h-full w-full">
-              {mediaItems.length === 0 ? (
+          <div className="absolute inset-0">
+            {mediaItems.length === 0 ? (
+              <div
+                className="absolute inset-0 bg-center bg-cover origin-center scale-[1.42] sm:scale-[1.15]"
+                style={{
+                  backgroundImage:
+                    'url("https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=2000")',
+                }}
+              />
+            ) : (
+              <>
                 <div
-                  className="absolute inset-0 bg-center bg-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                  style={{
-                    backgroundImage:
-                      'url("https://images.unsplash.com/photo-1503387762-592dea58ef23?auto=format&fit=crop&q=80&w=2000")',
-                  }}
-                />
-              ) : (
-                <>
-                  <div
-                    className={`absolute inset-0 transition-opacity duration-[1200ms] ${
-                      isTransitioning ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    {mediaItems[activeMediaIndex]?.isVideo ? (
-                      <video
-                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                        src={mediaItems[activeMediaIndex].src}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      />
-                    ) : (
-                      <img
-                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                        src={mediaItems[activeMediaIndex]?.src}
-                        alt="AES background"
-                      />
-                    )}
-                  </div>
+                  className={`absolute inset-0 transition-opacity duration-[1200ms] ${
+                    isTransitioning ? "opacity-0" : "opacity-100"
+                  }`}
+                >
+                  {mediaItems[activeMediaIndex]?.isVideo ? (
+                    <video
+                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                      src={mediaItems[activeMediaIndex].src}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                      src={mediaItems[activeMediaIndex]?.src}
+                      alt="Absolute Environmental Services background"
+                    />
+                  )}
+                </div>
 
-                  <div
-                    className={`absolute inset-0 transition-opacity duration-[1200ms] ${
-                      isTransitioning ? "opacity-100" : "opacity-0"
-                    }`}
-                  >
-                    {mediaItems[transitionIndex]?.isVideo ? (
-                      <video
-                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                        src={mediaItems[transitionIndex].src}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                      />
-                    ) : (
-                      <img
-                        className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
-                        src={mediaItems[transitionIndex]?.src}
-                        alt="AES background"
-                      />
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+                <div
+                  className={`absolute inset-0 transition-opacity duration-[1200ms] ${
+                    isTransitioning ? "opacity-100" : "opacity-0"
+                  }`}
+                >
+                  {mediaItems[transitionIndex]?.isVideo ? (
+                    <video
+                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                      src={mediaItems[transitionIndex].src}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  ) : (
+                    <img
+                      className="h-full w-full object-cover origin-center scale-[1.55] sm:scale-[1.24]"
+                      src={mediaItems[transitionIndex]?.src}
+                      alt="Absolute Environmental Services background"
+                    />
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to right, rgba(0,43,73,0.97) 0%, rgba(0,43,73,0.72) 30%, rgba(0,43,73,0.14) 70%, rgba(0,43,73,0.00) 100%)",
+                "linear-gradient(90deg, rgba(0,43,73,0.90) 0%, rgba(0,43,73,0.76) 34%, rgba(0,43,73,0.38) 68%, rgba(0,43,73,0.18) 100%)",
             }}
           />
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(0,43,73,0.16) 0%, rgba(0,43,73,0.05) 50%, rgba(0,43,73,0.78) 100%)",
+                "linear-gradient(180deg, rgba(0,43,73,0.22) 0%, rgba(0,43,73,0.12) 40%, rgba(0,43,73,0.72) 100%)",
             }}
           />
         </div>
@@ -544,75 +507,88 @@ const Hero: React.FC = () => {
         <div className="relative z-10 h-full">
           <div className="mx-auto flex h-full w-full max-w-6xl px-4 sm:px-6 lg:px-10">
             {!isAudioActive ? (
-              <div className="w-full max-w-[55rem] min-w-0 flex flex-col justify-center">
-                <div className="w-full text-left">
-                  <div className="flex flex-col pt-[5.3rem] sm:pt-[6.2rem] md:pt-[6.8rem] pb-16 sm:pb-14">
-                    <div className="w-full max-w-[47rem]">
-                      <div className="flex flex-col gap-5 sm:gap-6">
-                        <div className="w-full max-w-[20rem] sm:max-w-[21rem] rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md px-4 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.30)]">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-aes-cyan font-black leading-none text-[24px] sm:text-[28px]">
-                                24+
-                              </span>
-                              <span className="text-white/95 font-extrabold tracking-wide text-[11px] sm:text-[12px] uppercase leading-none">
-                                Years
-                              </span>
-                            </div>
+              <div className="w-full max-w-[55rem] flex flex-col justify-center">
+                <div className="inline-flex items-center self-start rounded-full border border-white/14 bg-white/8 px-4 py-2 backdrop-blur-md shadow-[0_12px_30px_rgba(0,0,0,0.18)]">
+                  <span className="text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.18em]">
+                    24+ Years Experience • Sydney & NSW
+                  </span>
+                </div>
 
-                            <span className="h-6 w-px bg-white/15" />
+                <div className="mt-6 max-w-[42rem]">
+                  <p className="text-white text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.24em]">
+                    Asbestos Removal - Inspections - Testing
+                  </p>
 
-                            <span className="text-white/85 font-medium text-[11px] sm:text-[12px] leading-tight">
-                              Delivering safe & compliant asbestos removal across NSW
-                            </span>
-                          </div>
-                        </div>
+                  <h1 className="mt-3 font-black tracking-tight leading-[0.95] drop-shadow-[0_6px_24px_rgba(0,0,0,0.4)]">
+                    <span className="block text-[clamp(2.6rem,6vw,5.6rem)] text-aes-cyan">
+                      Safe Removal.
+                    </span>
+                    <span className="block mt-1 text-[clamp(2.15rem,4.8vw,4.35rem)] text-aes-cyan">
+                      Clear Advice.
+                    </span>
+                    <span className="block mt-1 text-[clamp(2.15rem,4.8vw,4.35rem)] text-aes-cyan">
+                      Fast Response.
+                    </span>
+                  </h1>
 
-                        <div className="max-w-[48rem]">
-                          <h1 className="font-black tracking-tight text-white break-words">
-                            <span className="block text-white/80 text-[clamp(1rem,2.15vw,1.18rem)] leading-tight">
-                              Licensed asbestos removal, inspections and make-safe solutions across Sydney and NSW.
-                            </span>
+                  <p className="mt-6 max-w-[38rem] text-white text-[15px] sm:text-[16px] md:text-[17px] leading-relaxed font-medium">
+                    Professional asbestos inspections, make-safe works and compliant removal
+                    for homes, renovations and commercial properties across NSW.
+                  </p>
+                </div>
 
-                            <span className="block text-[clamp(2.3rem,5.4vw,5.1rem)] leading-[0.94] mt-2">
-                              Worried About Asbestos?
-                            </span>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <button
+                    className={primaryButtonClass}
+                    onClick={handleBookInspectionClick}
+                    type="button"
+                  >
+                    <span>Book Inspection</span>
+                  </button>
 
-                            <span className="block text-aes-cyan text-[clamp(1.65rem,4.15vw,3.9rem)] leading-[1.01] mt-2">
-                              Book A Licensed <br /> Inspection Today.
-                            </span>
-                          </h1>
-                        </div>
+                  <button
+                    className={secondaryButtonClass}
+                    onClick={handleCallNowClick}
+                    type="button"
+                  >
+                    <span>Call 0425 257 142</span>
+                  </button>
+                </div>
 
-                        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 pt-3">
-                          <ControlBar />
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-white">
+                  <span className="text-[12px] sm:text-[13px] uppercase tracking-[0.14em] font-bold">
+                    Safe
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-white/30" />
+                  <span className="text-[12px] sm:text-[13px] uppercase tracking-[0.14em] font-bold">
+                    Compliant
+                  </span>
+                  <span className="h-1 w-1 rounded-full bg-white/30" />
+                  <span className="text-[12px] sm:text-[13px] uppercase tracking-[0.14em] font-bold">
+                    Residential & Commercial
+                  </span>
+                </div>
 
-                          <button
-                            className={ctaButtonClass}
-                            onClick={handleBookInspectionClick}
-                            type="button"
-                          >
-                            Book Inspection
-                          </button>
-
-                          <button
-                            className={photoCheckButtonClass}
-                            onClick={handlePhotoCheckClick}
-                            type="button"
-                          >
-                            Photo Check
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="mt-7 flex flex-col items-start gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void togglePlayPause("hero_voiceover_button");
+                    }}
+                    className='inline-flex items-center gap-2 bg-white/92 px-4 py-2 text-[10px] md:text-[11px] uppercase tracking-[0.16em] font-extrabold text-white transition-all duration-300 hover:text-[#00AEEF]'
+                    aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
+                    aria-pressed={isPlaying}
+                  >
+                    <span className="text-sm">{isPlaying ? "II" : "▶"}</span>
+                    <span>{isPlaying ? "Pause Audio Overview" : "Play Audio Overview"}</span>
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="flex h-full w-full items-end justify-center pb-8 sm:pb-10 md:pb-12">
                 <div className="flex w-full max-w-[52rem] flex-col items-center justify-center gap-4 text-center">
                   {activePhraseText && (
-                    <div className="w-full max-w-[44rem] rounded-2xl border border-white/15 bg-black/25 backdrop-blur-md px-4 py-4 sm:px-5 sm:py-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                    <div className="w-full max-w-[44rem] rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl px-4 py-4 sm:px-5 sm:py-4 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
                       <p className="text-white text-[14px] sm:text-[16px] md:text-[18px] leading-relaxed font-medium">
                         {activePhraseText}
                       </p>
@@ -632,24 +608,6 @@ const Hero: React.FC = () => {
                     onToggleVolume={() => setShowVolume((prev) => !prev)}
                     onVolumeChange={onVolumeChange}
                   />
-
-                  <div className="flex max-w-full flex-wrap items-center justify-center gap-2.5 sm:gap-3">
-                    <button
-                      className={ctaButtonClass}
-                      onClick={handleBookInspectionClick}
-                      type="button"
-                    >
-                      Book Inspection
-                    </button>
-
-                    <button
-                      className={photoCheckButtonClass}
-                      onClick={handlePhotoCheckClick}
-                      type="button"
-                    >
-                      Photo Check
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
@@ -660,25 +618,33 @@ const Hero: React.FC = () => {
       </section>
 
       {hasScrolled && (
-        <div className="fixed bottom-4 left-4 z-[70]">
+        <div className="fixed bottom-4 left-4 z-[70] flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={handleCallNowClick}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-4 py-3 text-[10px] md:text-[11px] uppercase tracking-[0.16em] font-extrabold text-aes-navy shadow-[0_12px_30px_rgba(255,255,255,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-aes-cyan hover:border-aes-cyan"
+          >
+            <span>Call 0425 257 142</span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
               void togglePlayPause("floating_play_button");
             }}
-            className="inline-flex items-center gap-2 border border-blue-600 bg-white px-4 py-2 rounded-full text-[10px] md:text-xs uppercase tracking-widest font-bold text-blue-600 transition-all duration-300 hover:bg-blue-50 hover:text-blue-700"
+            className="inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/92 px-4 py-2 text-[10px] md:text-[11px] uppercase tracking-[0.16em] font-extrabold text-aes-navy transition-all duration-300 hover:bg-white"
             aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
             aria-pressed={isPlaying}
           >
             <span className="text-sm md:text-base">{isPlaying ? "II" : "▶"}</span>
-            <span>{isPlaying ? "Pause" : "Play"}</span>
+            <span>{isPlaying ? "Pause Audio" : "Play Audio"}</span>
 
             <span
               onClick={(e) => {
                 e.stopPropagation();
                 toggleMute();
               }}
-              className="ml-2 inline-flex items-center rounded-full border border-blue-200 px-2 py-0.5 text-[8px] md:text-[9px] tracking-widest cursor-pointer"
+              className="ml-2 inline-flex items-center rounded-full border border-slate-300 px-2 py-0.5 text-[8px] md:text-[9px] tracking-[0.16em] cursor-pointer"
             >
               {isMuted ? "UNMUTE" : "MUTE"}
             </span>
