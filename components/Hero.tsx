@@ -569,13 +569,13 @@ const Hero: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="mt-7 flex flex-col items-start gap-3">
+                <div className="mt-7 w-full max-w-[42rem]">
                   <button
                     type="button"
                     onClick={() => {
                       void togglePlayPause("hero_voiceover_button");
                     }}
-                    className='inline-flex items-center gap-2 bg-white/92 px-4 py-2 text-[10px] md:text-[11px] uppercase tracking-[0.16em] font-extrabold text-white transition-all duration-300 hover:text-[#00AEEF]'
+                    className='inline-flex items-center gap-2 text-white text-[11px] uppercase tracking-[0.16em] font-extrabold transition-colors duration-300 hover:text-[#00AEEF]'
                     aria-label={isPlaying ? "Pause voiceover" : "Play voiceover"}
                     aria-pressed={isPlaying}
                   >
