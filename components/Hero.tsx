@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import voiceover from "../assets/AES-andrew_aes-JaredBatsonVoiceover_Revision 2.wav";
 
@@ -68,12 +68,25 @@ const Hero: React.FC = () => {
   const activeMediaRef = useRef(0);
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isAudioActive, setIsAudioActive] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [volume, setVolume] = useState(1);
+  const [showFloatingControls, setShowFloatingControls] = useState(false);
 
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [transitionIndex, setTransitionIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isCaptionMode, setIsCaptionMode] = useState(false);
+
+  const [showDesktopFloatingVolume, setShowDesktopFloatingVolume] = useState(false);
+  const [isDesktopAudioExpanded, setIsDesktopAudioExpanded] = useState(false);
+  const [isDesktopCallExpanded, setIsDesktopCallExpanded] = useState(false);
+
+  const [isMobileAudioExpanded, setIsMobileAudioExpanded] = useState(false);
+  const [isMobileCallExpanded, setIsMobileCallExpanded] = useState(false);
+
+  const [showCaptionVolume, setShowCaptionVolume] = useState(false);
 
   useEffect(() => {
     activeMediaRef.current = activeMediaIndex;
@@ -103,7 +116,9 @@ const Hero: React.FC = () => {
   }, [isTransitioning, transitionIndex]);
 
   useEffect(() => {
-    const handleScroll = () => setHasScrolled(window.scrollY > 0);
+    const handleScroll = () => {
+      setShowFloatingControls(window.scrollY > 100);
+    };
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -111,7 +126,85 @@ const Hero: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const togglePlayPause = async () => {
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 640) {
+        setIsMobileAudioExpanded(false);
+        setIsMobileCallExpanded(false);
+      } else {
+        setIsDesktopAudioExpanded(false);
+        setIsDesktopCallExpanded(false);
+        setShowDesktopFloatingVolume(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.volume = volume;
+    audio.muted = isMuted;
+
+    const handleLoadedMetadata = () => {
+      setCurrentTime(audio.currentTime || 0);
+    };
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime || 0);
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setIsCaptionMode(false);
+      audio.currentTime = 0;
+      setShowCaptionVolume(false);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("pause", handlePause);
+    audio.addEventListener("play", handlePlay);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("pause", handlePause);
+      audio.removeEventListener("play", handlePlay);
+    };
+  }, [volume, isMuted]);
+
+  const activeCaption = useMemo(() => {
+    if (!isCaptionMode) return "";
+
+    const adjustedTime = Math.max(0, currentTime + CAPTION_OFFSET_SECONDS);
+
+    for (let i = PHRASES.length - 1; i >= 0; i -= 1) {
+      if (adjustedTime >= PHRASES[i].time) {
+        return PHRASES[i].text;
+      }
+    }
+
+    return PHRASES[0]?.text ?? "";
+  }, [currentTime, isCaptionMode]);
+
+  const handlePlayPause = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -121,10 +214,9 @@ const Hero: React.FC = () => {
 
     try {
       if (audio.paused) {
-        audio.muted = false;
+        setIsCaptionMode(true);
         await audio.play();
         setIsPlaying(true);
-        setIsAudioActive(true);
       } else {
         audio.pause();
         setIsPlaying(false);
@@ -134,18 +226,85 @@ const Hero: React.FC = () => {
     }
   };
 
+  const handleStop = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+    setCurrentTime(0);
+    setIsPlaying(false);
+    setIsCaptionMode(false);
+    setShowDesktopFloatingVolume(false);
+    setIsDesktopAudioExpanded(false);
+    setIsMobileAudioExpanded(false);
+    setShowCaptionVolume(false);
+  };
+
+  const handleMuteToggle = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const nextMuted = !audio.muted;
+    audio.muted = nextMuted;
+    setIsMuted(nextMuted);
+  };
+
+  const handleVolumeChange = (value: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const nextVolume = Math.max(0, Math.min(1, value));
+    audio.volume = nextVolume;
+    setVolume(nextVolume);
+
+    const shouldMute = nextVolume === 0;
+    audio.muted = shouldMute;
+    setIsMuted(shouldMute);
+  };
+
   const handleCallNowClick = () => {
+    track("hero_call_clicked", { section: "hero" });
     window.location.href = "tel:0425257142";
   };
 
   const handleBookInspectionClick = () => {
-    const target = document.getElementById("contact") || document.getElementById("quote");
+    const target =
+      document.getElementById("contact") || document.getElementById("quote");
+
     if (target) {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
     window.location.href = "#contact";
+  };
+
+  const handleMobileAudioMainButton = () => {
+    if (!isMobileAudioExpanded) {
+      setIsMobileAudioExpanded(true);
+      return;
+    }
+
+    setIsMobileAudioExpanded(false);
+  };
+
+  const handleMobileCallMainButton = () => {
+    setIsMobileCallExpanded((prev) => !prev);
+  };
+
+  const handleDesktopAudioMainButton = () => {
+    if (!isDesktopAudioExpanded) {
+      setIsDesktopAudioExpanded(true);
+      return;
+    }
+
+    setIsDesktopAudioExpanded(false);
+    setShowDesktopFloatingVolume(false);
+  };
+
+  const handleDesktopCallMainButton = () => {
+    setIsDesktopCallExpanded((prev) => !prev);
   };
 
   return (
@@ -157,7 +316,6 @@ const Hero: React.FC = () => {
           minHeight: "max(620px, 100svh)",
         }}
       >
-        {/* BACKGROUND */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0">
             {mediaItems.length === 0 ? (
@@ -219,7 +377,6 @@ const Hero: React.FC = () => {
             )}
           </div>
 
-          {/* GRADIENT OVERLAY */}
           <div
             className="absolute inset-0"
             style={{
@@ -237,12 +394,18 @@ const Hero: React.FC = () => {
           />
         </div>
 
-        {/* CONTENT */}
         <div className="relative z-10 h-full">
           <div className="mx-auto flex min-h-[max(620px,100svh)] w-full max-w-7xl px-4 sm:px-6 lg:px-10">
             <div className="flex w-full items-center py-20 sm:py-24 lg:py-28">
-              <div className="w-full max-w-[58rem] text-center md:text-left">
-                <div className="inline-flex items-center justify-center self-start rounded-full border border-white/14 bg-white/8 px-3 py-2 backdrop-blur-md sm:px-4">
+              <div
+                className={[
+                  "w-full max-w-[58rem] text-center md:text-left transition-all duration-500",
+                  isCaptionMode
+                    ? "opacity-0 pointer-events-none translate-y-4"
+                    : "opacity-100 translate-y-0",
+                ].join(" ")}
+              >
+                <div className="inline-flex items-center justify-center self-start rounded-full border border-white/20 bg-white/8 px-3 py-2 backdrop-blur-md sm:px-4">
                   <span className="text-white text-[10px] sm:text-[11px] md:text-[12px] font-extrabold uppercase tracking-[0.16em] sm:tracking-[0.18em]">
                     24+ Years Experience • Sydney & NSW
                   </span>
@@ -271,7 +434,6 @@ const Hero: React.FC = () => {
                   </p>
                 </div>
 
-                {/* CTA */}
                 <div className="mt-7 sm:mt-8 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:justify-center md:justify-start">
                   <button
                     onClick={handleBookInspectionClick}
@@ -288,20 +450,107 @@ const Hero: React.FC = () => {
                   </button>
                 </div>
 
-                {/* PLAY AUDIO */}
                 <div className="mt-6 sm:mt-7 w-full max-w-[42rem] mx-auto md:mx-0">
                   <button
                     type="button"
-                    onClick={togglePlayPause}
+                    onClick={handlePlayPause}
                     className="inline-flex items-center justify-center md:justify-start gap-2 text-white text-[10px] sm:text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.16em] font-extrabold transition-colors duration-300 hover:text-[#00AEEF]"
                   >
-                    <span className="text-[12px] sm:text-[13px] leading-none">
-                      {isPlaying ? "II" : "▶"}
-                    </span>
-                    <span>
-                      {isPlaying ? "Pause Audio Overview" : "Play Audio Overview"}
-                    </span>
+                    <span>▶</span>
+                    <span>Play Audio Overview</span>
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={[
+            "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-4 sm:pb-7 md:pb-8 transition-all duration-500",
+            isCaptionMode
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-6",
+          ].join(" ")}
+        >
+          <div className="pointer-events-auto w-full max-w-[56rem]">
+            <div className="mx-auto flex flex-col items-center">
+              <div
+                className="w-full max-w-[50rem] rounded-[22px] px-4 py-3 sm:px-6 sm:py-5 shadow-[0_18px_55px_rgba(0,0,0,0.16)]"
+                style={{
+                  background: "rgba(255,255,255,0.07)",
+                  backdropFilter: "blur(18px)",
+                  WebkitBackdropFilter: "blur(18px)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                }}
+              >
+                <p className="text-center text-white text-[14px] sm:text-[18px] md:text-[20px] leading-relaxed font-medium">
+                  {activeCaption}
+                </p>
+              </div>
+
+              <div
+                className="mt-2 w-full max-w-[22rem] sm:max-w-[38rem] rounded-full px-2 py-1.5 sm:px-3 sm:py-2.5 shadow-[0_10px_28px_rgba(0,0,0,0.12)]"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.09)",
+                }}
+              >
+                <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePlayPause}
+                    className="rounded-full bg-white text-aes-navy px-2.5 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-[13px] font-semibold transition-transform duration-300 hover:scale-[1.03]"
+                  >
+                    {isPlaying ? "II" : "▶"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleStop}
+                    className="rounded-full border border-white/10 bg-white/5 text-white px-2.5 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-[13px] font-medium transition-colors duration-300 hover:bg-white/10"
+                  >
+                    ■
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleMuteToggle}
+                    className="rounded-full border border-white/10 bg-white/5 text-white px-2.5 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-[13px] font-medium transition-colors duration-300 hover:bg-white/10"
+                  >
+                    {isMuted ? "Unmute" : "Mute"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCaptionVolume((prev) => !prev)}
+                    className="rounded-full border border-white/10 bg-white/5 text-white px-2.5 py-1 sm:px-4 sm:py-2 text-[10px] sm:text-[13px] font-medium transition-colors duration-300 hover:bg-white/10"
+                  >
+                    Vol
+                  </button>
+
+                  <div
+                    className={[
+                      "overflow-hidden transition-all duration-300 ease-out",
+                      showCaptionVolume
+                        ? "max-w-[72px] sm:max-w-[140px] opacity-100"
+                        : "max-w-0 opacity-0",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-center pl-1 sm:pl-2">
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={isMuted ? 0 : volume}
+                        onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                        className="h-1 w-[56px] sm:w-[110px] cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -310,6 +559,259 @@ const Hero: React.FC = () => {
 
         <audio ref={audioRef} src={voiceover} preload="auto" />
       </section>
+
+      {/* DESKTOP CALL */}
+      <div
+        className={[
+          "hidden sm:block fixed left-4 bottom-4 z-50 transition-all duration-300",
+          showFloatingControls
+            ? "translate-y-0 opacity-100"
+            : "translate-y-4 opacity-0 pointer-events-none",
+        ].join(" ")}
+      >
+        <div
+          className="flex items-center overflow-hidden rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.12)]"
+          style={{
+            background: "rgba(4,28,45,0.68)",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            border: "1px solid rgba(255,255,255,0.09)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleDesktopCallMainButton}
+            className="flex h-11 w-11 items-center justify-center text-white text-[14px] font-medium"
+            aria-label="Expand call button"
+          >
+            {isDesktopCallExpanded ? "→" : "☎"}
+          </button>
+
+          <div
+            className={[
+              "overflow-hidden transition-all duration-300 ease-out",
+              isDesktopCallExpanded
+                ? "max-w-[148px] opacity-100"
+                : "max-w-0 opacity-0",
+            ].join(" ")}
+          >
+            <button
+              type="button"
+              onClick={handleCallNowClick}
+              className="whitespace-nowrap pr-4 text-white text-[12px] font-medium"
+            >
+              0425 257 142
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP AUDIO */}
+      <div
+        className={[
+          "hidden sm:block fixed right-4 bottom-4 z-50 transition-all duration-300",
+          showFloatingControls
+            ? "translate-y-0 opacity-100"
+            : "translate-y-4 opacity-0 pointer-events-none",
+        ].join(" ")}
+      >
+        <div
+          className="flex items-center overflow-hidden rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.12)]"
+          style={{
+            background: "rgba(4,28,45,0.68)",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            border: "1px solid rgba(255,255,255,0.09)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleDesktopAudioMainButton}
+            className={[
+              "flex h-11 w-11 items-center justify-center font-semibold transition-all duration-300",
+              isDesktopAudioExpanded
+                ? "bg-transparent text-white text-[15px]"
+                : "bg-white text-aes-navy text-[13px]",
+            ].join(" ")}
+            aria-label={isDesktopAudioExpanded ? "Collapse audio controls" : "Expand audio controls"}
+          >
+            {isDesktopAudioExpanded ? "→" : isPlaying ? "II" : "▶"}
+          </button>
+
+          <div
+            className={[
+              "flex items-center overflow-hidden transition-all duration-300 ease-out",
+              isDesktopAudioExpanded
+                ? "max-w-[340px] opacity-100 pr-2 gap-2"
+                : "max-w-0 opacity-0 pr-0 gap-0",
+            ].join(" ")}
+          >
+            <button
+              type="button"
+              onClick={handlePlayPause}
+              className="whitespace-nowrap rounded-full bg-white px-3 py-1.5 text-aes-navy text-[12px] font-semibold"
+            >
+              {isPlaying ? "II" : "▶"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleMuteToggle}
+              className="whitespace-nowrap rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-white text-[12px] font-medium"
+            >
+              {isMuted ? "Unmute" : "Mute"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleStop}
+              className="whitespace-nowrap rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-white text-[12px] font-medium"
+            >
+              ■
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowDesktopFloatingVolume((prev) => !prev)}
+              className="whitespace-nowrap rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-white text-[12px] font-medium"
+            >
+              Vol
+            </button>
+
+            <div
+              className={[
+                "overflow-hidden transition-all duration-300",
+                showDesktopFloatingVolume
+                  ? "max-w-[110px] opacity-100"
+                  : "max-w-0 opacity-0",
+              ].join(" ")}
+            >
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={isMuted ? 0 : volume}
+                onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                className="h-1.5 w-[86px] cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE CALL */}
+      <div
+        className={[
+          "sm:hidden fixed left-3 bottom-3 z-50 transition-all duration-300",
+          showFloatingControls
+            ? "translate-y-0 opacity-100"
+            : "translate-y-4 opacity-0 pointer-events-none",
+        ].join(" ")}
+      >
+        <div
+          className="flex items-center overflow-hidden rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.12)]"
+          style={{
+            background: "rgba(4,28,45,0.68)",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            border: "1px solid rgba(255,255,255,0.09)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleMobileCallMainButton}
+            className="flex h-10 w-10 items-center justify-center text-white text-[13px] font-medium"
+            aria-label="Show call number"
+          >
+            {isMobileCallExpanded ? "→" : "☎"}
+          </button>
+
+          <div
+            className={[
+              "overflow-hidden transition-all duration-300 ease-out",
+              isMobileCallExpanded
+                ? "max-w-[132px] opacity-100"
+                : "max-w-0 opacity-0",
+            ].join(" ")}
+          >
+            <button
+              type="button"
+              onClick={handleCallNowClick}
+              className="whitespace-nowrap pr-3 text-white text-[11px] font-medium"
+            >
+              0425 257 142
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE AUDIO */}
+      <div
+        className={[
+          "sm:hidden fixed right-3 bottom-3 z-50 transition-all duration-300",
+          showFloatingControls
+            ? "translate-y-0 opacity-100"
+            : "translate-y-4 opacity-0 pointer-events-none",
+        ].join(" ")}
+      >
+        <div
+          className="flex items-center overflow-hidden rounded-full shadow-[0_10px_24px_rgba(0,0,0,0.12)]"
+          style={{
+            background: "rgba(4,28,45,0.68)",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            border: "1px solid rgba(255,255,255,0.09)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleMobileAudioMainButton}
+            className={[
+              "flex h-10 w-10 items-center justify-center font-semibold transition-all duration-300",
+              isMobileAudioExpanded
+                ? "bg-transparent text-white text-[14px]"
+                : "bg-white text-aes-navy text-[13px]",
+            ].join(" ")}
+            aria-label={isMobileAudioExpanded ? "Collapse audio controls" : "Expand audio controls"}
+          >
+            {isMobileAudioExpanded ? "→" : isPlaying ? "II" : "▶"}
+          </button>
+
+          <div
+            className={[
+              "flex items-center overflow-hidden transition-all duration-300 ease-out",
+              isMobileAudioExpanded
+                ? "max-w-[220px] opacity-100 pr-2 gap-1.5"
+                : "max-w-0 opacity-0 pr-0 gap-0",
+            ].join(" ")}
+          >
+            <button
+              type="button"
+              onClick={handlePlayPause}
+              className="whitespace-nowrap rounded-full bg-white px-3 py-1.5 text-aes-navy text-[11px] font-semibold"
+            >
+              {isPlaying ? "II" : "▶"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleMuteToggle}
+              className="whitespace-nowrap rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-white text-[11px] font-medium"
+            >
+              {isMuted ? "Unmute" : "Mute"}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleStop}
+              className="whitespace-nowrap rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-white text-[11px] font-medium"
+            >
+              ■
+            </button>
+          </div>
+        </div>
+      </div>
     </>
   );
 };
