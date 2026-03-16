@@ -499,7 +499,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <CookieConsent />
+      
       <Header />
 
       <main>
