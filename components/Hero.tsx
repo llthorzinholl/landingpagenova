@@ -432,6 +432,9 @@ const Hero: React.FC = () => {
                     Professional asbestos inspections and compliant removal for homes,
                     renovations and commercial properties across NSW.
                   </p>
+                  <p className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-400/10 px-4 py-2 text-xs font-semibold tracking-wide text-cyan-100 shadow-[0_0_20px_rgba(34,211,238,0.12)] backdrop-blur-md sm:text-sm">
+                     Book Now and Save $400 with our free clearance inspection report <br/>available for the next 14 days only.
+                  </p>
                 </div>
 
                 <div className="mt-7 sm:mt-8 flex flex-col gap-3 sm:gap-4 sm:flex-row sm:justify-center md:justify-start">
