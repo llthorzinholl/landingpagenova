@@ -20,8 +20,8 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
               Our Expertise
             </h2>
             <h3 className="text-3xl md:text-5xl font-black text-aes-navy leading-tight">
-              Leading Environmental <br className="hidden md:block" />
-              {" "}Remediation Services.
+              Leading Environmental <br className="hidden md:block" />{" "}
+              Remediation Services.
             </h3>
           </div>
           <p className="text-base md:text-lg text-slate-600 max-w-md mx-auto md:mx-0">
@@ -48,7 +48,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
                 />
                 <div className="absolute inset-0 bg-aes-navy/20 group-hover:bg-aes-navy/0 transition-colors" />
               </div>
-
               <div className="p-6 md:p-8 flex-grow">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="text-2xl md:text-3xl">{service.icon}</span>
@@ -56,11 +55,9 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
                     {service.title}
                   </h4>
                 </div>
-
                 <p className="text-slate-600 leading-relaxed mb-6 md:mb-8 text-xs md:text-sm">
                   {service.description}
                 </p>
-
                 <a
                   href="#contact"
                   onClick={() => onSelectService?.(service.title)}
