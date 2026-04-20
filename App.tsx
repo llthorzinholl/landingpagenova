@@ -11,6 +11,13 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { track } from "@vercel/analytics";
 import { upload } from "@vercel/blob/client";
 
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    gtag_report_conversion?: (url?: string) => boolean | void;
+  }
+}
+
 const VIMEO_EMBED_URL =
   "https://player.vimeo.com/video/1146343746?autoplay=1&muted=1&loop=1&background=1&title=0&byline=0&portrait=0";
 const VIMEO_THUMB = asbestosImage;
@@ -69,6 +76,23 @@ const aboutPortfolioPairs = aboutPortfolioItems.reduce<
 const normalizeAustralianPhone = (value: string) => {
   const digits = value.replace(/\D/g, "");
   return digits.startsWith("0") ? `+61${digits.slice(1)}` : `+61${digits}`;
+};
+
+const fireGoogleAdsConversion = () => {
+  if (typeof window === "undefined") return;
+
+  if (typeof window.gtag_report_conversion === "function") {
+    window.gtag_report_conversion();
+    return;
+  }
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "conversion", {
+      send_to: "AW-994192169/u511CIbluoUcEKnWiNoD",
+      value: 1.0,
+      currency: "AUD",
+    });
+  }
 };
 
 const App: React.FC = () => {
@@ -283,6 +307,8 @@ const App: React.FC = () => {
         return;
       }
 
+      fireGoogleAdsConversion();
+
       track("quote_form_submitted", {
         source: "contact_section",
         page: "home",
@@ -396,6 +422,8 @@ const App: React.FC = () => {
         return;
       }
 
+      fireGoogleAdsConversion();
+
       track("photo_check_submitted", {
         source: "contact_section",
         page: "home",
@@ -499,7 +527,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      
       <Header />
 
       <main>
@@ -1518,6 +1545,7 @@ By proceeding, you confirm that you understand and accept that this service is i
 
       <Analytics />
       <SpeedInsights />
+      <CookieConsent />
     </div>
   );
 };
